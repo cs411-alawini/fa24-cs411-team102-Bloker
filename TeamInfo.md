@@ -10,7 +10,7 @@
 | Captain     |  aryang6@illinois.edu  |
 | Member1     |       Dhruv Raval      |
 | Member1     |  dkraval2@ilinois.edu  |
-| Member2     |       Rieun Kim        |
+| Member2     |         Lin Kim        |
 | Member2     |  linkim2@illinois.edu  |
 | Member3     |    Nikitha Sundaram    |
 | Member3     | nikitha7@illinois.edu  |
