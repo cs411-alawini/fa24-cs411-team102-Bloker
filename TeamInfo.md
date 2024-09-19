@@ -1,4 +1,4 @@
-# team102
+# Team102 - Blocker
 
 ## Basic Information
 
@@ -19,8 +19,9 @@
 
 |   Info      |        Description     |
 | ----------- | ---------------------- |
-|  Title      |       ProjectTitle     |
+|  Title      |       Job Market Analysis Platform      |
 | System URL  |      link_to_system    |
 | Video Link  |      link_to_video     |
 
 ## Project Summary
+Our project is a web application that aggregates job postings, trends, and salary information and provides users with relevant insights into the job market. Our platform will aggregate data from multiple sources such as job boards, salary postings, and location data to show users where their resumes and skills can be applied. In addition, we will offer personalized resume and cover letter tailoring to help users get the jobs they desire. 
