@@ -50,5 +50,8 @@ def query_database():
         if conn:
             conn.close()
 
+# build out specific queries
+
 if __name__ == "__main__":
     query_database()
+
