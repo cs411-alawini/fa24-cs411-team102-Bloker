@@ -1,0 +1,4 @@
+Flask==2.3.2                # Flask web framework
+pymysql==1.0.3              # MySQL database driver
+gunicorn==20.1.0            # Production WSGI HTTP server for running Flask
+git+https://github.com/GoogleCloudPlatform/cloud-sql-python-connector  # Connector for Google Cloud SQL
