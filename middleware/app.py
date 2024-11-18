@@ -1,4 +1,4 @@
-# For API routes and middleware logic.
+# app.py - Updated to support new features
 
 from flask import Flask, request, jsonify
 from google.cloud.sql.connector import Connector
@@ -11,10 +11,13 @@ sys.path.append(backend_path)
 
 from basic import get_connection
 
+from flask_cors import CORS 
+
 app = Flask(__name__)
+CORS(app)  # Enable CORS
 
 # Database configuration
-db_user = ""
+db_user = "drava"
 db_pass = ""
 db_name = ""
 instance_connection_name = "project-439622:us-central1:sqlpt3stage"
@@ -26,8 +29,7 @@ connector = Connector()
 def home():
     return "Welcome to the API! Use specific endpoints like /user, /heatmap or /jobs.", 200
 
-# Add and update User information
-@app.route('/user', methods=['GET', 'POST', 'PUT'])
+@app.route('/user', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def manage_user():
     try:
         conn = get_connection()
@@ -35,14 +37,21 @@ def manage_user():
             if request.method == 'GET':
                 # Fetch user information
                 email = request.args.get('email')  # Get 'email' query parameter
+                limit = request.args.get('limit', default=None, type=int)
                 if email:
                     # Query for a specific user by email
                     query = "SELECT UserId, Resume, Email, FirstName, LastName FROM User WHERE Email = %s;"
                     cursor.execute(query, (email,))
                 else:
-                    # Query for all users if no email is provided
-                    query = "SELECT UserId, Resume, Email, FirstName, LastName FROM User;"
-                    cursor.execute(query)
+                    # Query for all users or limit
+                    query = "SELECT UserId, Resume, Email, FirstName, LastName FROM User"
+                    params = []
+                    if limit:
+                        query += " ORDER BY UserId DESC LIMIT %s;"
+                        params.append(limit)
+                    else:
+                        query += ";"
+                    cursor.execute(query, params)
                 
                 results = cursor.fetchall()
                 users = [
@@ -100,13 +109,23 @@ def manage_user():
                 conn.commit()
                 return jsonify({"message": "User updated successfully"}), 200
 
+            elif request.method == 'DELETE':
+                # Delete user
+                email = request.args.get('email')
+                if not email:
+                    return jsonify({"error": "Email parameter is required for deletion"}), 400
+
+                query = "DELETE FROM User WHERE Email = %s;"
+                cursor.execute(query, (email,))
+                conn.commit()
+                return jsonify({"message": f"User with email {email} deleted successfully"}), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
         if conn:
             conn.close()
-
-# Show filtered jobs
+# Show filtered jobs with pagination and city search
 @app.route('/jobs', methods=['GET'])
 def get_jobs():
     filters = {
@@ -119,36 +138,33 @@ def get_jobs():
     }
     
     where_clauses = []
-    params = []
+    filter_params = []
 
     # Add filters to the query dynamically
     for key, value in filters.items():
         if value:
             where_clauses.append(f"{key} LIKE %s")
-            params.append(f"%{value}%")
+            filter_params.append(f"%{value}%")
+
+    offset = request.args.get('offset', default=0, type=int)
+    limit = 10  # Default limit
 
     conn = None  # Initialize conn
     try:
         conn = get_connection()
         with conn.cursor() as cursor:
+            # Build the base query
+            query = """
+                SELECT Job.JobId, Job.CompanyName, Job.JobRole, Location.City, Location.State, Location.ZipCode
+                FROM Job
+                JOIN Location ON Job.LocationId = Location.LocationId
+                JOIN Company ON Job.CompanyName = Company.CompanyName
+            """
             if where_clauses:
-                query = f"""
-                    SELECT Job.JobId, Job.CompanyName, Job.JobRole, Location.City, Location.State, Location.ZipCode
-                    FROM Job
-                    JOIN Location ON Job.LocationId = Location.LocationId
-                    JOIN Company ON Job.CompanyName = Company.CompanyName
-                    WHERE {' OR '.join(where_clauses)}
-                    LIMIT 10;
-                """
-            else:
-                query = """
-                    SELECT Job.JobId, Job.CompanyName, Job.JobRole, Location.City, Location.State, Location.ZipCode
-                    FROM Job
-                    JOIN Location ON Job.LocationId = Location.LocationId
-                    JOIN Company ON Job.CompanyName = Company.CompanyName
-                    LIMIT 10;
-                """
-                params = []
+                query += " WHERE " + " OR ".join(where_clauses)
+            query += " LIMIT %s OFFSET %s;"
+
+            params = filter_params + [limit, offset]
             cursor.execute(query, params)
             results = cursor.fetchall()
             return jsonify(results), 200
@@ -157,7 +173,6 @@ def get_jobs():
     finally:
         if conn:
             conn.close()
-
 # Heat map query
 @app.route('/heatmap', methods=['GET'])
 def heatmap_data():
