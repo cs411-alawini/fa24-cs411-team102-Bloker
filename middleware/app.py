@@ -14,9 +14,9 @@ from basic import get_connection
 app = Flask(__name__)
 
 # Database configuration
-db_user = "drava"
-db_pass = "411pass"
-db_name = "411project"
+db_user = ""
+db_pass = ""
+db_name = ""
 instance_connection_name = "project-439622:us-central1:sqlpt3stage"
 
 # Initialize Connector
@@ -29,12 +29,41 @@ def home():
 # Add and update User information
 @app.route('/user', methods=['GET', 'POST', 'PUT'])
 def manage_user():
-    data = request.json
     try:
         conn = get_connection()
         with conn.cursor() as cursor:
-            if request.method == 'POST':
+            if request.method == 'GET':
+                # Fetch user information
+                email = request.args.get('email')  # Get 'email' query parameter
+                if email:
+                    # Query for a specific user by email
+                    query = "SELECT UserId, Resume, Email, FirstName, LastName FROM User WHERE Email = %s;"
+                    cursor.execute(query, (email,))
+                else:
+                    # Query for all users if no email is provided
+                    query = "SELECT UserId, Resume, Email, FirstName, LastName FROM User;"
+                    cursor.execute(query)
+                
+                results = cursor.fetchall()
+                users = [
+                    {
+                        "UserId": row[0],
+                        "Resume": row[1],
+                        "Email": row[2],
+                        "FirstName": row[3],
+                        "LastName": row[4]
+                    }
+                    for row in results
+                ]
+                return jsonify(users), 200
+
+            elif request.method == 'POST':
+                # POST expects JSON
+                if not request.is_json:
+                    return jsonify({"error": "Request must be JSON and have 'Content-Type: application/json' header"}), 415
+                
                 # Add new user
+                data = request.get_json()
                 query = """
                     INSERT INTO User (Resume, Email, Password, FirstName, LastName)
                     VALUES (%s, %s, %s, %s, %s);
@@ -48,8 +77,14 @@ def manage_user():
                 ))
                 conn.commit()
                 return jsonify({"message": "User added successfully"}), 201
+
             elif request.method == 'PUT':
+                # PUT expects JSON
+                if not request.is_json:
+                    return jsonify({"error": "Request must be JSON and have 'Content-Type: application/json' header"}), 415
+                
                 # Update user
+                data = request.get_json()
                 query = """
                     UPDATE User
                     SET Resume = %s, Password = %s, FirstName = %s, LastName = %s
@@ -64,6 +99,7 @@ def manage_user():
                 ))
                 conn.commit()
                 return jsonify({"message": "User updated successfully"}), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:

@@ -7,9 +7,9 @@ from google.cloud.sql.connector import Connector
 assert "GOOGLE_APPLICATION_CREDENTIALS" in os.environ, "GOOGLE_APPLICATION_CREDENTIALS is not set!"
 
 # Database connection configuration
-db_user = "drava"
-db_pass = "411pass"
-db_name = "411project"
+db_user = ""
+db_pass = ""
+db_name = ""
 
 INSTANCE_CONNECTION_NAME = os.getenv(
     "INSTANCE_CONNECTION_NAME", "project-439622:us-central1:sqlpt3stage"
