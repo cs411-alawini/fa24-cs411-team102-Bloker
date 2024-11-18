@@ -1,0 +1,141 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    text-align: center;
+    background-color: #007BFF;
+    color: #fff;
+    padding: 20px 0;
+    margin: 0 0 20px 0;
+}
+
+.container {
+    display: flex;
+    justify-content: space-around;
+    margin: 0 5%;
+}
+
+.users-section, .jobs-section {
+    width: 45%;
+    background-color: #fff;
+    padding: 20px;
+    box-sizing: border-box;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.users-section h2, .jobs-section h2 {
+    text-align: center;
+    color: #333;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+table thead tr {
+    background-color: #007BFF;
+    color: #fff;
+}
+
+table th, table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+form input, form textarea {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+    box-sizing: border-box;
+}
+
+form button {
+    padding: 10px 15px;
+    background-color: #28a745;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+    font-size: 16px;
+}
+
+form button:hover {
+    background-color: #218838;
+}
+
+.actions button {
+    padding: 5px 10px;
+    margin-right: 5px;
+    background-color: #ffc107;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+}
+
+.actions button:hover {
+    background-color: #e0a800;
+}
+
+.actions .delete-btn {
+    background-color: #dc3545;
+}
+
+.actions .delete-btn:hover {
+    background-color: #c82333;
+}
+
+.user-controls, .job-controls {
+    margin-bottom: 15px;
+}
+
+.user-controls label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.user-controls input, .job-controls input {
+    padding: 8px;
+    width: calc(100% - 20px);
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+.user-controls button, .job-controls button {
+    padding: 8px 15px;
+    margin-right: 5px;
+    background-color: #007BFF;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+}
+
+.user-controls button:hover, .job-controls button:hover {
+    background-color: #0056b3;
+}
+
+.job-controls input {
+    width: 70%;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.job-controls button {
+    width: calc(15% - 5px);
+    display: inline-block;
+}
+
+.job-controls button:last-child {
+    margin-left: 5px;
+}
