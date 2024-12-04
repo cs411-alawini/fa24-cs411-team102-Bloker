@@ -1,3 +1,77 @@
+/* General styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7fc;
+}
+
+.login-container {
+    width: 300px;
+    margin: 100px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.login-container h1 {
+    margin-bottom: 20px;
+    color: #007BFF;
+}
+
+.login-container form {
+    display: flex;
+    flex-direction: column;
+}
+
+.login-container input,
+.login-container textarea {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.login-container button {
+    padding: 10px;
+    background-color: #007BFF;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.login-container button:hover {
+    background-color: #0056b3;
+}
+
+textarea {
+    resize: vertical;
+    height: 100px;
+}
+
+#login-form button,
+#create-account-form button {
+    margin-top: 10px;
+}
+
+/* Style the 'Create Account' button */
+#create-account-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+#create-account-button:hover {
+    background-color: #218838;
+}
+
+
 body {
     font-family: Arial, sans-serif;
     background-color: #f0f2f5;
@@ -139,3 +213,4 @@ form button:hover {
 .job-controls button:last-child {
     margin-left: 5px;
 }
+
