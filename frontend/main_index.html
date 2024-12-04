@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Market Analysis Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAz3BbsMmhO-lavmY4xQD9yyxmA2pxQrQo" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Job Market Analysis Platform</h1>
+        <button id="logout-btn">Logout</button>
+    </header>
+
+    <div class="container">
+        <!-- Resume Section -->
+        <div class="resume-section">
+            <h2>Your Resume</h2>
+            <form id="user-info-form">
+                <label for="firstName">First Name:</label>
+                <input type="text" id="firstName" placeholder="First Name">
+
+                <label for="lastName">Last Name:</label>
+                <input type="text" id="lastName" placeholder="Last Name">
+
+                <label for="resume">Resume:</label>
+                <textarea id="resume" placeholder="Paste your resume here"></textarea>
+
+                <button type="submit">Save</button>
+            </form>
+        </div>
+
+        <!-- Map Section -->
+        <div class="map-section">
+            <h2>Job Heatmap</h2>
+            <div id="map"></div>
+        </div>
+
+        <!-- Jobs Section -->
+        <div class="jobs-info-section">
+            <div class="jobs-box">
+                <h2>All Jobs</h2>
+                <input type="text" id="search-all-jobs" placeholder="Search jobs">
+                <button id="sort-all-jobs">Sort</button>
+                <table id="all-jobs-table">
+                    <thead>
+                        <tr>
+                            <th>JobId</th>
+                            <th>CompanyName</th>
+                            <th>JobRole</th>
+                            <th>City</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="jobs-box">
+                <h2>Recommended Jobs</h2>
+                <input type="text" id="search-recommended-jobs" placeholder="Search jobs">
+                <button id="sort-recommended-jobs">Sort</button>
+                <table id="recommended-jobs-table">
+                    <thead>
+                        <tr>
+                            <th>JobId</th>
+                            <th>CompanyName</th>
+                            <th>JobRole</th>
+                            <th>City</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

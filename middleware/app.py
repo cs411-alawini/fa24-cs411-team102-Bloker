@@ -11,15 +11,16 @@ sys.path.append(backend_path)
 
 from basic import get_connection
 
-from flask_cors import CORS 
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS
+CORS(app)
+
 
 # Database configuration
 db_user = "drava"
-db_pass = ""
-db_name = ""
+db_pass = "411pass"
+db_name = "411project"
 instance_connection_name = "project-439622:us-central1:sqlpt3stage"
 
 # Initialize Connector
