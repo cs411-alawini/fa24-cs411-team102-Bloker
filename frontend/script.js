@@ -3,10 +3,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // TODO: finish map initialization (looks to be possible API error)
     function initMap() {
-        const map = new google.maps.Map(document.getElementById('map'), {
-            center: { lat: 39.5, lng: -98.35 },
-            zoom: 4,
-        });
+        // const map = new google.maps.Map(document.getElementById('map'), {
+        //     center: { lat: 39.5, lng: -98.35 },
+        //     zoom: 4,
+        // });
         console.log("Map initialized successfully!");
     }
 
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // TODO: get specific user data, return it, and display it
+    // TODO: get specific user data, return it, and display it 
 
     // Attach event listeners
     document.getElementById('refresh-jobs-btn').addEventListener('click', fetchAllJobs);
