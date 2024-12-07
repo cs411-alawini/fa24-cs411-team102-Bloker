@@ -2,69 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Job Market Analysis Platform</title>
+    <title>Login</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <h1>Job Market Analysis Platform</h1>
+    <div class="login-container">
+        <!-- Login Form -->
+        <form id="login-form">
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
 
-    <div class="container">
-        <div class="users-section">
-            <h2>Users</h2>
-            <div class="user-controls">
-                <label for="user-limit">Number of recent users to display:</label>
-                <input type="number" id="user-limit" min="1" value="10">
-                <button id="refresh-users-btn">Refresh Users</button>
-            </div>
-            <table id="users-table">
-                <thead>
-                    <tr>
-                        <th>UserId</th>
-                        <th>Email</th>
-                        <th>FirstName</th>
-                        <th>LastName</th>
-                        <th>Resume</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Users will be populated here -->
-                </tbody>
-            </table>
-            <h3>Add New User</h3>
-            <form id="add-user-form">
-                <input type="email" id="email" placeholder="Email" required>
-                <input type="password" id="password" placeholder="Password" required>
-                <input type="text" id="firstName" placeholder="First Name">
-                <input type="text" id="lastName" placeholder="Last Name">
-                <textarea id="resume" placeholder="Resume"></textarea>
-                <button type="submit">Add User</button>
-            </form>
-        </div>
-
-        <div class="jobs-section">
-            <h2>Jobs</h2>
-            <div class="job-controls">
-                <input type="text" id="city-search" placeholder="Search by City">
-                <button id="search-jobs-btn">Search Jobs</button>
-                <button id="refresh-jobs-btn">Refresh Jobs</button>
-            </div>
-            <table id="jobs-table">
-                <thead>
-                    <tr>
-                        <th>JobId</th>
-                        <th>CompanyName</th>
-                        <th>JobRole</th>
-                        <th>City</th>
-                        <th>State</th>
-                        <th>ZipCode</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Jobs will be populated here -->
-                </tbody>
-            </table>
-        </div>
+        <!-- Error Message -->
+        <p id="error-message" style="color: red; display: none;"></p>
     </div>
 
     <script src="script.js"></script>

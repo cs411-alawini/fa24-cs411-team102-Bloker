@@ -1,46 +1,134 @@
+/* General styles */
 body {
     font-family: Arial, sans-serif;
-    background-color: #f0f2f5;
     margin: 0;
     padding: 0;
+    background-color: #f4f7fc;
 }
 
-h1 {
+.login-container {
+    width: 300px;
+    margin: 100px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     text-align: center;
+}
+
+.login-container h1 {
+    margin-bottom: 20px;
+    color: #007BFF;
+}
+
+.login-container form {
+    display: flex;
+    flex-direction: column;
+}
+
+.login-container input,
+.login-container textarea {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.login-container button {
+    padding: 10px;
     background-color: #007BFF;
-    color: #fff;
-    padding: 20px 0;
-    margin: 0 0 20px 0;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.login-container button:hover {
+    background-color: #0056b3;
+}
+
+textarea {
+    resize: vertical;
+    height: 100px;
+}
+
+#login-form button,
+#create-account-form button {
+    margin-top: 10px;
+}
+
+/* Style the 'Create Account' button */
+#create-account-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+#create-account-button:hover {
+    background-color: #218838;
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background-color: #f4f6f9;
+}
+
+header {
+    background-color: #007BFF;
+    color: white;
+    padding: 20px;
+    text-align: center;
 }
 
 .container {
     display: flex;
-    justify-content: space-around;
-    margin: 0 5%;
-}
-
-.users-section, .jobs-section {
-    width: 45%;
-    background-color: #fff;
+    justify-content: space-between;
     padding: 20px;
-    box-sizing: border-box;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    gap: 20px;
 }
 
-.users-section h2, .jobs-section h2 {
-    text-align: center;
-    color: #333;
+.info-box, .map-section {
+    flex: 1;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+}
+
+#map {
+    width: 100%;
+    height: 400px;
+    border: 1px solid #ddd;
+}
+
+.jobs-container {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    gap: 20px;
+}
+
+.jobs-box {
+    flex: 1;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+}
+
+.jobs-box h2 {
+    margin-top: 0;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 20px;
-}
-
-table thead tr {
-    background-color: #007BFF;
-    color: #fff;
+    margin-top: 10px;
 }
 
 table th, table td {
@@ -49,72 +137,7 @@ table th, table td {
     text-align: left;
 }
 
-table tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-form input, form textarea {
-    width: 100%;
-    padding: 8px;
-    margin: 5px 0;
-    box-sizing: border-box;
-}
-
-form button {
-    padding: 10px 15px;
-    background-color: #28a745;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 10px;
-    font-size: 16px;
-}
-
-form button:hover {
-    background-color: #218838;
-}
-
-.actions button {
-    padding: 5px 10px;
-    margin-right: 5px;
-    background-color: #ffc107;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-}
-
-.actions button:hover {
-    background-color: #e0a800;
-}
-
-.actions .delete-btn {
-    background-color: #dc3545;
-}
-
-.actions .delete-btn:hover {
-    background-color: #c82333;
-}
-
-.user-controls, .job-controls {
-    margin-bottom: 15px;
-}
-
-.user-controls label {
-    display: block;
-    margin-bottom: 5px;
-}
-
-.user-controls input, .job-controls input {
-    padding: 8px;
-    width: calc(100% - 20px);
-    box-sizing: border-box;
-    margin-bottom: 10px;
-}
-
-.user-controls button, .job-controls button {
-    padding: 8px 15px;
-    margin-right: 5px;
+table thead {
     background-color: #007BFF;
     border: none;
     color: #fff;
@@ -138,4 +161,71 @@ form button:hover {
 
 .job-controls button:last-child {
     margin-left: 5px;
+}
+
+/* Personal Information Section */
+.info-box {
+    flex: 1;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.info-box h2 {
+    margin-bottom: 20px;
+    color: #333;
+    text-align: center;
+    font-size: 1.8rem;
+}
+
+.info-box form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.info-box label {
+    font-size: 1rem;
+    color: #555;
+    font-weight: bold;
+}
+
+.info-box input,
+.info-box textarea {
+    font-size: 1rem;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    transition: border-color 0.3s ease;
+}
+
+.info-box input:focus,
+.info-box textarea:focus {
+    border-color: #007BFF;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.info-box textarea {
+    resize: none;
+    height: 120px;
+}
+
+.info-box button {
+    padding: 10px 15px;
+    background-color: #007BFF;
+    color: white;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.info-box button:hover {
+    background-color: #0056b3;
 }

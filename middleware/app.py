@@ -11,13 +11,14 @@ sys.path.append(backend_path)
 
 from basic import get_connection
 
-from flask_cors import CORS 
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS
+CORS(app)
+
 
 # Database configuration
-db_user = "drava"
+db_user = ""
 db_pass = ""
 db_name = ""
 instance_connection_name = "project-439622:us-central1:sqlpt3stage"
@@ -199,6 +200,76 @@ def heatmap_data():
     finally:
         if conn:
             conn.close()
+
+@app.route('/auth/login', methods=['POST'])
+def login():
+    try:
+        if not request.is_json:
+            return jsonify({"error": "Request must be JSON and have 'Content-Type: application/json' header"}), 415
+
+        data = request.get_json()
+        email = data.get("email")
+        password = data.get("password")
+
+        if not email or not password:
+            return jsonify({"error": "Email and password are required"}), 400
+
+        conn = get_connection()
+        with conn.cursor() as cursor:
+            query = "SELECT Resume, FirstName, LastName FROM User WHERE Email = %s AND Password = %s;"
+            cursor.execute(query, (email, password))
+            result = cursor.fetchone()
+
+            if not result:
+                return jsonify({"error": "Invalid email or password"}), 401
+
+            resume, first_name, last_name = result
+
+            return jsonify({
+                "message": "Login successful",
+                "user": {
+                    "Resume": resume,
+                    "FirstName": first_name,
+                    "LastName": last_name
+                }
+            }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+@app.route('/user', methods=['GET'])
+def get_user():
+    try:
+        user_id = request.args.get('user_id')
+        if not user_id:
+            return jsonify({"error": "User ID is required"}), 400
+
+        conn = get_connection()
+        with conn.cursor() as cursor:
+            query = "SELECT FirstName, LastName, Resume FROM User WHERE UserId = %s;"
+            cursor.execute(query, (user_id,))
+            result = cursor.fetchone()
+
+            if not result:
+                return jsonify({"error": "User not found"}), 404
+
+            first_name, last_name, resume = result
+
+            return jsonify({
+                "FirstName": first_name,
+                "LastName": last_name,
+                "Resume": resume
+            }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
 
 if __name__ == '__main__':
     app.run(debug=True)
