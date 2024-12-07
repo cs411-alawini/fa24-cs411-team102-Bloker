@@ -1,3 +1,70 @@
+async function registerAccount(event) {
+    event.preventDefault(); // Prevent the form from refreshing the page
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const firstName = document.getElementById("firstName").value;
+    const lastName = document.getElementById("lastName").value;
+
+    try {
+        const response = await fetch('http://127.0.0.1:5000/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email,
+                password,
+                firstName,
+                lastName,
+            }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Registration failed');
+        }
+
+        alert("Registration successful! Redirecting to login...");
+        window.location.href = "login.html"; // Redirect to login page
+    } catch (error) {
+        console.error('Error during account registration:', error.message);
+        alert(`Error: ${error.message}`);
+    }
+}
+
+async function loginAccount(event) {
+    event.preventDefault(); // Prevent the form from refreshing the page
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try {
+        const response = await fetch('http://127.0.0.1:5000/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email,
+                password,
+            }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Login failed');
+        }
+
+        localStorage.setItem('authToken', data.authToken); // Store token for authenticated requests
+        alert("Login successful! Redirecting to dashboard...");
+        window.location.href = "dashboard.html"; // Redirect to dashboard
+    } catch (error) {
+        console.error('Error during login:', error.message);
+        alert(`Error: ${error.message}`);
+    }
+}
+
 let map, heatmap;
 
 async function initMap() {
@@ -7,10 +74,7 @@ async function initMap() {
     mapTypeId: "satellite",
   });
   const points = await getPoints();
-  heatmap = new google.maps.visualization.HeatmapLayer({
-    data: getPoints(),
-    map: map,
-  });
+    heatmap = new google.maps.visualization.HeatmapLayer({ data: points, map });
   document
     .getElementById("toggle-heatmap-btn")
     .addEventListener("click", toggleHeatmap);
@@ -52,9 +116,17 @@ function toggleHeatmap() {
 
 // TODO: replace current mock data with real data (endpoint on backend, this is also the format we will need)
 async function getPoints() {
-    const response = await fetch('http://127.0.0.1:5000/heatmap');
-    const data = await response.json();
-    return data.map(d => new google.maps.LatLng(d.Latitude, d.Longitude));
+    try {
+        const response = await fetch('http://127.0.0.1:5000/heatmap');
+        if (!response.ok) {
+            throw new Error('Failed to fetch heatmap points');
+        }
+        const data = await response.json();
+        return data.map(d => new google.maps.LatLng(d.Latitude, d.Longitude));
+    } catch (error) {
+        console.error('Error fetching heatmap data:', error);
+        return [];
+    }
 }
 // function getPoints() {
 //   return [
@@ -564,14 +636,21 @@ async function getPoints() {
 window.initMap = initMap;
 
 async function fetchUserInfo() {
-    const response = await fetch('http://127.0.0.1:5000/user', {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
-    });
-    const userInfo = await response.json();
-    document.getElementById('firstName').value = userInfo.FirstName || '';
-    document.getElementById('lastName').value = userInfo.LastName || '';
-    document.getElementById('resume').value = userInfo.Resume || '';
+    try {
+        const response = await fetch('http://127.0.0.1:5000/user', {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch user info');
+        }
+        const userInfo = await response.json();
+        document.getElementById('firstName').value = userInfo.FirstName || '';
+        document.getElementById('lastName').value = userInfo.LastName || '';
+        document.getElementById('resume').value = userInfo.Resume || '';
+    } catch (error) {
+        console.error('Error fetching user info:', error);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
