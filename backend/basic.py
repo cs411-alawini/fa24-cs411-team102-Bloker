@@ -32,25 +32,25 @@ def get_connection():
     )
     return conn
 
-# def query_database():
-#     conn = None
-#     try:
-#         conn = get_connection()
-#         with conn.cursor() as cursor:
-#             # Example query: Fetch all users
-#             query = "SELECT * FROM User LIMIT 10;"
-#             cursor.execute(query)
+def query_database():
+    conn = None
+    try:
+        conn = get_connection()
+        with conn.cursor() as cursor:
+            # Example query: Fetch all users
+            query = "SELECT * FROM User LIMIT 10;"
+            cursor.execute(query)
             
-#             # Fetch results
-#             results = cursor.fetchall()
-#             print("Query Results:")
-#             for row in results:
-#                 print(row)
-#     except Exception as e:
-#         print(f"Error: {e}")
-#     finally:
-#         if conn:
-#             conn.close()
+            # Fetch results
+            results = cursor.fetchall()
+            print("Query Results:")
+            for row in results:
+                print(row)
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        if conn:
+            conn.close()
 
 # build out specific queries
 

@@ -1,33 +1,99 @@
 # For API routes and middleware logic.
 
 import os
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C:\\Users\\nikra\\Downloads\\project-439622-321adf136869.json"
 from flask import Flask, request, jsonify
 from google.cloud.sql.connector import Connector
+from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy import create_engine, Column, Integer, String, Text
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 import sys
+from dotenv import load_dotenv
 
 
 # Add the backend folder to sys.path
 backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../backend"))
 sys.path.append(backend_path)
 
-from basic import get_connection
-from flask_cors import CORS
+from backend.basic import get_connection
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
 CORS(app)
+
+
 # Database configuration
-db_user = "drava"
-db_pass = "411pass"
-db_name = "411project"
+db_user = ""
+db_pass = ""
+db_name = ""
 instance_connection_name = "project-439622:us-central1:sqlpt3stage"
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Fetch environment variables
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_NAME = os.getenv("DB_NAME")
+DB_HOST = os.getenv("DB_HOST")
 
 # Initialize Connector
 connector = Connector()
 
+# SQLAlchemy setup
+DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
+engine = create_engine(DATABASE_URL)
+Base = declarative_base()
+SessionLocal = sessionmaker(bind=engine)
+db = SessionLocal()
+
 @app.route("/")
 def home():
     return "Welcome to the API! Use specific endpoints like /user, /heatmap or /jobs.", 200
+
+class User(Base):
+    __tablename__ = 'User'  # Match the table name in your database (case-sensitive)
+    
+    UserId = Column(Integer, primary_key=True, autoincrement=True)
+    Resume = Column(Text)
+    Email = Column(String(255), unique=True, nullable=False)
+    Password = Column(String(255), nullable=False)
+    FirstName = Column(String(255))
+    LastName = Column(String(255))
+
+# Initialize database
+Base.metadata.create_all(bind=engine)
+
+@app.route('/auth/register', methods=['POST'])
+def register():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+
+    existing_user = db.query(User).filter_by(username=username).first()
+    if existing_user:
+        return jsonify({'error': 'User already exists'}), 400
+
+    hashed_password = generate_password_hash(password, method='sha256')
+    new_user = User(username=username, password_hash=hashed_password)
+    db.add(new_user)
+    db.commit()
+    return jsonify({'message': 'User registered successfully'}), 201
+
+@app.route('/auth/login', methods=['POST'])
+def login():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+
+    user = db.query(User).filter_by(username=username).first()
+    if not user or not check_password_hash(user.password_hash, password):
+        return jsonify({'error': 'Invalid username or password'}), 401
+
+    # Mock token for simplicity
+    token = f"mock-token-for-{username}"
+    return jsonify({'message': 'Login successful', 'authToken': token}), 200
 
 # Add and update User information
 @app.route('/user', methods=['GET', 'POST', 'PUT'])
@@ -173,11 +239,11 @@ def heatmap_data():
         with conn.cursor() as cursor:
             # Count jobs by nearby locations
             query = """
-                SELECT Location.City, Location.State, COUNT(Job.JobId) as JobCount
+                SELECT Location.City, Location.State, Location.Latitude, Location.Longitude, COUNT(Job.JobId) as JobCount
                 FROM Job
                 JOIN Location ON Job.LocationId = Location.LocationId
                 WHERE Location.City LIKE %s OR Location.State LIKE %s OR Location.ZipCode LIKE %s
-                GROUP BY Location.City, Location.State;
+                GROUP BY Location.City, Location.State, Location.Latitude, Location.Longitude;
             """
             cursor.execute(query, (f"%{city}%", f"%{state}%", f"%{zip_code}%"))
             results = cursor.fetchall()
@@ -187,6 +253,34 @@ def heatmap_data():
     finally:
         if conn:
             conn.close()
+
+
+@app.route('/auth/register', methods=['POST'])
+def register():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+
+    if username in User:
+        return jsonify({'error': 'User already exists'}), 400
+
+    hashed_password = generate_password_hash(password, method='sha256')
+    User[username] = hashed_password
+    return jsonify({'message': 'User registered successfully'}), 201
+
+
+@app.route('/auth/login', methods=['POST'])
+def login():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+
+    if username not in User or not check_password_hash(User[username], password):
+        return jsonify({'error': 'Invalid username or password'}), 401
+
+    # Mock token for simplicity (replace with JWT in production)
+    token = f"mock-token-for-{username}"
+    return jsonify({'message': 'Login successful', 'authToken': token}), 200
 
 
 if __name__ == '__main__':
