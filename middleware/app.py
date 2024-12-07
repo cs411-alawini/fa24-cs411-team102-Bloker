@@ -1,9 +1,10 @@
 # app.py - Updated to support new features
-
+import os
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C:/Users/nikra/Downloads/project-439622-321adf136869.json"
 from flask import Flask, request, jsonify
 from google.cloud.sql.connector import Connector
 import sys
-import os
+
 
 # Add the backend folder to sys.path
 backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../backend"))
@@ -18,9 +19,9 @@ CORS(app)
 
 
 # Database configuration
-db_user = ""
-db_pass = ""
-db_name = ""
+db_user = "drava"
+db_pass = "411pass"
+db_name = "411project"
 instance_connection_name = "project-439622:us-central1:sqlpt3stage"
 
 # Initialize Connector
@@ -263,6 +264,54 @@ def get_user():
                 "LastName": last_name,
                 "Resume": resume
             }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+@app.route('/auth/register', methods=['POST'])
+def register():
+    conn = None 
+    try:
+        if not request.is_json:
+            return jsonify({"error": "Request must be JSON and have 'Content-Type: application/json' header"}), 415
+
+        # Get the data from the request body
+        data = request.get_json()
+        first_name = data.get("firstName")
+        last_name = data.get("lastName")
+        email = data.get("email")
+        password = data.get("password")
+        resume = data.get("resume")
+        print(first_name, )
+        # Check if all required fields are provided
+        if not all([first_name, last_name, email, password, resume]):
+            print("hi")
+            return jsonify({"error": "All fields (FirstName, LastName, Email, Password, Resume) are required"}), 400
+        print(data, "a")
+        # Check if the email already exists in the database
+        conn = get_connection()
+        with conn.cursor() as cursor:
+            query = "SELECT Email FROM User WHERE Email = %s;"
+            cursor.execute(query, (email,))
+            existing_user = cursor.fetchone()
+            print(data, "b")
+            if existing_user:
+                return jsonify({"error": "Email is already in use"}), 400
+
+            # Insert new user data into the User table
+            insert_query = """
+                INSERT INTO User (FirstName, LastName, Email, Password, Resume)
+                VALUES (%s, %s, %s, %s, %s);
+            """
+            print(data, "c")
+            cursor.execute(insert_query, (first_name, last_name, email, password, resume))
+            conn.commit()
+
+            # Return success message
+            return jsonify({"message": "Account created successfully"}), 201
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
