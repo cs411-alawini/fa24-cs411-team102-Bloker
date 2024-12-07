@@ -163,3 +163,69 @@ table thead {
     margin-left: 5px;
 }
 
+/* Personal Information Section */
+.info-box {
+    flex: 1;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.info-box h2 {
+    margin-bottom: 20px;
+    color: #333;
+    text-align: center;
+    font-size: 1.8rem;
+}
+
+.info-box form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.info-box label {
+    font-size: 1rem;
+    color: #555;
+    font-weight: bold;
+}
+
+.info-box input,
+.info-box textarea {
+    font-size: 1rem;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    transition: border-color 0.3s ease;
+}
+
+.info-box input:focus,
+.info-box textarea:focus {
+    border-color: #007BFF;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.info-box textarea {
+    resize: none;
+    height: 120px;
+}
+
+.info-box button {
+    padding: 10px 15px;
+    background-color: #007BFF;
+    color: white;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.info-box button:hover {
+    background-color: #0056b3;
+}

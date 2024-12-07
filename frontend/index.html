@@ -2,84 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Job Search Application</title>
+    <title>Login</title>
     <link rel="stylesheet" href="styles.css">
-    <script
-      src="https://maps.googleapis.com/maps/api/js?key=INSERT_API_KEY&callback=initMap&libraries=visualization&v=weekly"
-      defer
-    ></script>
 </head>
 <body>
-    <header>
-        <h1>Job Search Application</h1>
-    </header>
+    <h1>Job Market Analysis Platform</h1>
+    <div class="login-container">
+        <!-- Login Form -->
+        <form id="login-form">
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
 
-    <!-- TODO: Make this look nicer and update it from data on the backend -->
-    <div class="container">
-        <div class="info-box">
-            <h2>Your Personal Information</h2>
-            <form id="personal-info-form">
-                <label for="firstName">First Name:</label>
-                <input type="text" id="firstName" placeholder="Enter your first name">
-
-                <label for="lastName">Last Name:</label>
-                <input type="text" id="lastName" placeholder="Enter your last name">
-
-                <label for="resume">Resume:</label>
-                <textarea id="resume" placeholder="Paste your resume here"></textarea>
-
-                <button type="submit">Save</button>
-            </form>
-        </div>
-
-        <div class="map-section">
-            <h2>Job Heatmap</h2>
-            <div id="map"></div>
-            <button id="toggle-heatmap-btn" style="margin-top: 10px;">Toggle Heatmap</button>
-        </div>
-    </div>
-
-    <div class="jobs-container">
-        <div class="jobs-box" id="all-jobs-box">
-            <h2>All Jobs</h2>
-            <button id="refresh-jobs-btn">Refresh Jobs</button>
-            <table id="all-jobs-table">
-                <thead>
-                    <tr>
-                        <th>JobId</th>
-                        <th>CompanyName</th>
-                        <th>JobRole</th>
-                        <th>City</th>
-                        <th>State</th>
-                        <th>ZipCode</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Jobs will be dynamically added here -->
-                </tbody>
-            </table>
-        </div>
-
-        <div class="jobs-box" id="recommended-jobs-box">
-            <h2>Recommended Jobs</h2>
-            <button id="refresh-recommended-jobs-btn">Refresh Recommended Jobs</button>
-            <table id="recommended-jobs-table">
-                <thead>
-                    <tr>
-                        <th>JobId</th>
-                        <th>CompanyName</th>
-                        <th>JobRole</th>
-                        <th>City</th>
-                        <th>State</th>
-                        <th>ZipCode</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Recommended jobs will be dynamically added here -->
-                </tbody>
-            </table>
-        </div>
+        <!-- Error Message -->
+        <p id="error-message" style="color: red; display: none;"></p>
     </div>
 
     <script src="script.js"></script>
