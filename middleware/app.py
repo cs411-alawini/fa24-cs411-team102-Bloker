@@ -73,47 +73,21 @@ def manage_user():
                 if not request.is_json:
                     return jsonify({"error": "Request must be JSON and have 'Content-Type: application/json' header"}), 415
                 
-                # Add or update user
+                # Add new user
                 data = request.get_json()
-                email = data.get('Email')
-                if not email:
-                    return jsonify({"error": "Email is required to add or update user"}), 400
-
-                # Check if the user exists
-                query = "SELECT COUNT(*) FROM User WHERE Email = %s;"
-                cursor.execute(query, (email,))
-                user_exists = cursor.fetchone()[0] > 0
-
-                if user_exists:
-                    # Update user
-                    query = """
-                        UPDATE User
-                        SET Resume = %s, FirstName = %s, LastName = %s
-                        WHERE Email = %s;
-                    """
-                    cursor.execute(query, (
-                        data.get('Resume'),
-                        data.get('FirstName'),
-                        data.get('LastName'),
-                        email
-                    ))
-                    message = "User updated successfully"
-                else:
-                    # Add new user
-                    query = """
-                        INSERT INTO User (Resume, Email, FirstName, LastName)
-                        VALUES (%s, %s, %s, %s);
-                    """
-                    cursor.execute(query, (
-                        data.get('Resume'),
-                        email,
-                        data.get('FirstName'),
-                        data.get('LastName')
-                    ))
-                    message = "User added successfully"
-
+                query = """
+                    INSERT INTO User (Resume, Email, Password, FirstName, LastName)
+                    VALUES (%s, %s, %s, %s, %s);
+                """
+                cursor.execute(query, (
+                    data.get('Resume'),
+                    data['Email'],
+                    data['Password'],
+                    data.get('FirstName'),
+                    data.get('LastName')
+                ))
                 conn.commit()
-                return jsonify({"message": message}), 201
+                return jsonify({"message": "User added successfully"}), 201
 
             elif request.method == 'PUT':
                 # PUT expects JSON
@@ -122,19 +96,31 @@ def manage_user():
                 
                 # Update user
                 data = request.get_json()
+                old_email = data.get('OldEmail')  # Old email to identify the record
+                new_email = data.get('Email')  # New email to update in the record
+
+                if not old_email:
+                    return jsonify({"error": "OldEmail parameter is required to update user information"}), 400
+
                 query = """
                     UPDATE User
-                    SET Resume = %s, FirstName = %s, LastName = %s
+                    SET Resume = %s, Password = %s, FirstName = %s, LastName = %s, Email = %s
                     WHERE Email = %s;
                 """
-                cursor.execute(query, (
-                    data.get('Resume'),
-                    data.get('FirstName'),
-                    data.get('LastName'),
-                    data['Email']
-                ))
-                conn.commit()
-                return jsonify({"message": "User updated successfully"}), 200
+                try:
+                    cursor.execute(query, (
+                        data.get('Resume'),
+                        data['Password'],
+                        data.get('FirstName'),
+                        data.get('LastName'),
+                        new_email,
+                        old_email
+                    ))
+                    conn.commit()
+                    return jsonify({"message": "User updated successfully"}), 200
+                except Exception as e:
+                    conn.rollback()
+                    return jsonify({"error": str(e)}), 500
 
             elif request.method == 'DELETE':
                 # Delete user
@@ -152,7 +138,6 @@ def manage_user():
     finally:
         if conn:
             conn.close()
-
 # Show filtered jobs with pagination and city search
 @app.route('/jobs', methods=['GET'])
 def get_jobs():
@@ -243,21 +228,22 @@ def login():
 
         conn = get_connection()
         with conn.cursor() as cursor:
-            query = "SELECT Resume, FirstName, LastName FROM User WHERE Email = %s AND Password = %s;"
+            query = "SELECT Resume, FirstName, LastName, Email FROM User WHERE Email = %s AND Password = %s;"
             cursor.execute(query, (email, password))
             result = cursor.fetchone()
 
             if not result:
                 return jsonify({"error": "Invalid email or password"}), 401
 
-            resume, first_name, last_name = result
+            resume, first_name, last_name, email = result
 
             return jsonify({
                 "message": "Login successful",
                 "user": {
                     "Resume": resume,
                     "FirstName": first_name,
-                    "LastName": last_name
+                    "LastName": last_name,
+                    "Email": email
                 }
             }), 200
 
@@ -276,18 +262,20 @@ def get_user():
 
         conn = get_connection()
         with conn.cursor() as cursor:
-            query = "SELECT FirstName, LastName, Resume FROM User WHERE UserId = %s;"
+            query = "SELECT FirstName, LastName, Email, Password, Resume FROM User WHERE UserId = %s;"
             cursor.execute(query, (user_id,))
             result = cursor.fetchone()
 
             if not result:
                 return jsonify({"error": "User not found"}), 404
 
-            first_name, last_name, resume = result
+            first_name, last_name, email, password, resume = result
 
             return jsonify({
                 "FirstName": first_name,
                 "LastName": last_name,
+                "Email": email,
+                "Password" : password,
                 "Resume": resume
             }), 200
 

@@ -19,13 +19,17 @@ async function loginAccount(event) {
         localStorage.setItem('user', JSON.stringify({
             firstName: data.user.FirstName,
             lastName: data.user.LastName,
-            resume: data.user.Resume || '' // Default to empty string if Resume is not present
+            email: data.user.Email,
+            resume: data.user.Resume || '', // Default to empty string if Resume is not present
+            password: password
         }));
 
         console.log("Logged in user info stored in localStorage:", {
             firstName: data.user.FirstName,
             lastName: data.user.LastName,
-            resume: data.user.Resume || ''
+            email: data.user.Email,
+            resume: data.user.Resume || '',
+            password: password
         });
 
         alert("Login successful! Redirecting to homepage...");
@@ -49,16 +53,18 @@ function fetchUserInfo() {
             throw new Error("User information not found. Please log in again.");
         }
 
-        const { firstName, lastName, resume } = JSON.parse(storedUser);
+        const { firstName, lastName, email, resume } = JSON.parse(storedUser);
 
         // Update the document fields with user information
         document.getElementById("firstName").value = firstName || '';
         document.getElementById("lastName").value = lastName || '';
+        document.getElementById("email").value = email || '';
         document.getElementById("resume").value = resume || '';
 
         console.log("User information updated in the UI from localStorage:", {
             firstName,
             lastName,
+            email,
             resume
         });
     } catch (error) {
@@ -88,6 +94,7 @@ async function saveUserInfo(event) {
 
     const firstName = document.getElementById("firstName").value.trim();
     const lastName = document.getElementById("lastName").value.trim();
+    const email = document.getElementById("email").value.trim();
     const resume = document.getElementById("resume").value.trim();
 
     try {
@@ -97,6 +104,7 @@ async function saveUserInfo(event) {
         if (
             storedUser.firstName === firstName &&
             storedUser.lastName === lastName &&
+            storedUser.email === email &&
             storedUser.resume === resume
         ) {
             console.log("No changes detected in user information.");
@@ -106,10 +114,12 @@ async function saveUserInfo(event) {
 
         // Prepare payload
         const payload = {
+            OldEmail: storedUser.email, // Current email in the database
+            Email: email, // New email to update
             FirstName: firstName,
             LastName: lastName,
             Resume: resume,
-            Email: storedUser.email // Ensure email is passed as it's a key
+            Password: storedUser.password // Include the stored password
         };
 
         const method = storedUser.email ? "PUT" : "POST"; // Use PUT if updating, POST if inserting
@@ -130,6 +140,7 @@ async function saveUserInfo(event) {
             ...storedUser,
             firstName,
             lastName,
+            email,
             resume
         }));
 
