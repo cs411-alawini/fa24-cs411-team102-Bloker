@@ -4,6 +4,7 @@ from flask import Flask, request, jsonify
 from google.cloud.sql.connector import Connector
 import sys
 import os
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/lin/Documents/CS 411 Project/project-439622-5340524c4d83.json"
 
 # Add the backend folder to sys.path
 backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../backend"))
@@ -18,9 +19,9 @@ CORS(app)
 
 
 # Database configuration
-db_user = ""
-db_pass = ""
-db_name = ""
+db_user = "drava"
+db_pass = "411pass"
+db_name = "411project"
 instance_connection_name = "project-439622:us-central1:sqlpt3stage"
 
 # Initialize Connector
@@ -72,21 +73,47 @@ def manage_user():
                 if not request.is_json:
                     return jsonify({"error": "Request must be JSON and have 'Content-Type: application/json' header"}), 415
                 
-                # Add new user
+                # Add or update user
                 data = request.get_json()
-                query = """
-                    INSERT INTO User (Resume, Email, Password, FirstName, LastName)
-                    VALUES (%s, %s, %s, %s, %s);
-                """
-                cursor.execute(query, (
-                    data.get('Resume'),
-                    data['Email'],
-                    data['Password'],
-                    data.get('FirstName'),
-                    data.get('LastName')
-                ))
+                email = data.get('Email')
+                if not email:
+                    return jsonify({"error": "Email is required to add or update user"}), 400
+
+                # Check if the user exists
+                query = "SELECT COUNT(*) FROM User WHERE Email = %s;"
+                cursor.execute(query, (email,))
+                user_exists = cursor.fetchone()[0] > 0
+
+                if user_exists:
+                    # Update user
+                    query = """
+                        UPDATE User
+                        SET Resume = %s, FirstName = %s, LastName = %s
+                        WHERE Email = %s;
+                    """
+                    cursor.execute(query, (
+                        data.get('Resume'),
+                        data.get('FirstName'),
+                        data.get('LastName'),
+                        email
+                    ))
+                    message = "User updated successfully"
+                else:
+                    # Add new user
+                    query = """
+                        INSERT INTO User (Resume, Email, FirstName, LastName)
+                        VALUES (%s, %s, %s, %s);
+                    """
+                    cursor.execute(query, (
+                        data.get('Resume'),
+                        email,
+                        data.get('FirstName'),
+                        data.get('LastName')
+                    ))
+                    message = "User added successfully"
+
                 conn.commit()
-                return jsonify({"message": "User added successfully"}), 201
+                return jsonify({"message": message}), 201
 
             elif request.method == 'PUT':
                 # PUT expects JSON
@@ -97,12 +124,11 @@ def manage_user():
                 data = request.get_json()
                 query = """
                     UPDATE User
-                    SET Resume = %s, Password = %s, FirstName = %s, LastName = %s
+                    SET Resume = %s, FirstName = %s, LastName = %s
                     WHERE Email = %s;
                 """
                 cursor.execute(query, (
                     data.get('Resume'),
-                    data['Password'],
                     data.get('FirstName'),
                     data.get('LastName'),
                     data['Email']
@@ -126,6 +152,7 @@ def manage_user():
     finally:
         if conn:
             conn.close()
+
 # Show filtered jobs with pagination and city search
 @app.route('/jobs', methods=['GET'])
 def get_jobs():

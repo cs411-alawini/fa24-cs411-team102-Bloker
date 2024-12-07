@@ -81,3 +81,71 @@ document.addEventListener("DOMContentLoaded", () => {
         fetchUserInfo(); // Populate the form with the data
     }
 });
+
+// Save user information to the database
+async function saveUserInfo(event) {
+    event.preventDefault(); // Prevent default form submission
+
+    const firstName = document.getElementById("firstName").value.trim();
+    const lastName = document.getElementById("lastName").value.trim();
+    const resume = document.getElementById("resume").value.trim();
+
+    try {
+        const storedUser = JSON.parse(localStorage.getItem("user")) || {};
+
+        // Check if there's a change in user data
+        if (
+            storedUser.firstName === firstName &&
+            storedUser.lastName === lastName &&
+            storedUser.resume === resume
+        ) {
+            console.log("No changes detected in user information.");
+            alert("No changes made to update.");
+            return;
+        }
+
+        // Prepare payload
+        const payload = {
+            FirstName: firstName,
+            LastName: lastName,
+            Resume: resume,
+            Email: storedUser.email // Ensure email is passed as it's a key
+        };
+
+        const method = storedUser.email ? "PUT" : "POST"; // Use PUT if updating, POST if inserting
+
+        const response = await fetch("http://127.0.0.1:5000/user", {
+            method: method,
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Failed to save user information");
+
+        // Update localStorage with the latest user info
+        localStorage.setItem("user", JSON.stringify({
+            ...storedUser,
+            firstName,
+            lastName,
+            resume
+        }));
+
+        console.log("User information saved successfully:", data);
+        alert("User information saved successfully!");
+
+    } catch (error) {
+        console.error("Error saving user information:", error.message);
+        alert(`Error saving user information: ${error.message}`);
+    }
+}
+
+// Attach the saveUserInfo function to the form submission event
+document.addEventListener("DOMContentLoaded", () => {
+    const personalInfoForm = document.getElementById("personal-info-form");
+    if (personalInfoForm) {
+        personalInfoForm.addEventListener("submit", saveUserInfo);
+    }
+});
