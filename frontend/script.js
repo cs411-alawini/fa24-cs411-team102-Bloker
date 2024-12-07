@@ -1,3 +1,4 @@
+
 // Handle login
 async function loginAccount(event) {
     event.preventDefault();

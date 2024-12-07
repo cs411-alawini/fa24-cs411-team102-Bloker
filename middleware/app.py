@@ -1,9 +1,11 @@
 # app.py - Updated to support new features
 
+import os
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C:/Users/nikra/Downloads/project-439622-321adf136869.json"
 from flask import Flask, request, jsonify
 from google.cloud.sql.connector import Connector
 import sys
-import os
+
 
 # Add the backend folder to sys.path
 backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../backend"))
@@ -18,9 +20,9 @@ CORS(app)
 
 
 # Database configuration
-db_user = ""
-db_pass = ""
-db_name = ""
+db_user = "drava"
+db_pass = "411pass"
+db_name = "411project"
 instance_connection_name = "project-439622:us-central1:sqlpt3stage"
 
 # Initialize Connector
