@@ -285,19 +285,19 @@ def register():
         email = data.get("email")
         password = data.get("password")
         resume = data.get("resume")
-        print(first_name, )
+        
         # Check if all required fields are provided
         if not all([first_name, last_name, email, password, resume]):
             print("hi")
             return jsonify({"error": "All fields (FirstName, LastName, Email, Password, Resume) are required"}), 400
-        print(data, "a")
+        
         # Check if the email already exists in the database
         conn = get_connection()
         with conn.cursor() as cursor:
             query = "SELECT Email FROM User WHERE Email = %s;"
             cursor.execute(query, (email,))
             existing_user = cursor.fetchone()
-            print(data, "b")
+            
             if existing_user:
                 return jsonify({"error": "Email is already in use"}), 400
 
@@ -306,7 +306,7 @@ def register():
                 INSERT INTO User (FirstName, LastName, Email, Password, Resume)
                 VALUES (%s, %s, %s, %s, %s);
             """
-            print(data, "c")
+            
             cursor.execute(insert_query, (first_name, last_name, email, password, resume))
             conn.commit()
 
