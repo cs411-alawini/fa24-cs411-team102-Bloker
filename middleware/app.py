@@ -288,7 +288,7 @@ def register():
         
         # Check if all required fields are provided
         if not all([first_name, last_name, email, password, resume]):
-            print("hi")
+            
             return jsonify({"error": "All fields (FirstName, LastName, Email, Password, Resume) are required"}), 400
         
         # Check if the email already exists in the database
