@@ -216,19 +216,19 @@ def login():
 
         conn = get_connection()
         with conn.cursor() as cursor:
-            query = "SELECT UserId, FirstName, LastName FROM User WHERE Email = %s AND Password = %s;"
+            query = "SELECT Resume, FirstName, LastName FROM User WHERE Email = %s AND Password = %s;"
             cursor.execute(query, (email, password))
             result = cursor.fetchone()
 
             if not result:
                 return jsonify({"error": "Invalid email or password"}), 401
 
-            user_id, first_name, last_name = result
+            resume, first_name, last_name = result
 
             return jsonify({
                 "message": "Login successful",
                 "user": {
-                    "UserId": user_id,
+                    "Resume": resume,
                     "FirstName": first_name,
                     "LastName": last_name
                 }
@@ -239,7 +239,7 @@ def login():
     finally:
         if conn:
             conn.close()
-            
+
 @app.route('/user', methods=['GET'])
 def get_user():
     try:
