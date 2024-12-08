@@ -19,13 +19,43 @@ CORS(app)
 
 
 # Database configuration
-db_user = ""
-db_pass = ""
+db_user = "drava"
+db_pass = "411pass"
 db_name = ""
 instance_connection_name = "project-439622:us-central1:sqlpt3stage"
 
 # Initialize Connector
 connector = Connector()
+
+import numpy as np
+import json
+import torch
+from transformers import AutoTokenizer, AutoModel
+
+# Initialize the tokenizer and model globally
+tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
+model = AutoModel.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
+model.eval()
+
+# Update the cosine similarity function if not already present
+def cosine_similarity(v1, v2):
+    v1 = np.array(v1)
+    v2 = np.array(v2)
+    dot_product = np.dot(v1, v2)
+    norm_v1 = np.linalg.norm(v1)
+    norm_v2 = np.linalg.norm(v2)
+    if norm_v1 == 0 or norm_v2 == 0:
+        return 0.0
+    return dot_product / (norm_v1 * norm_v2)
+
+# Replace the existing compute_embedding function with this one
+def compute_embedding(text):
+    inputs = tokenizer(text, return_tensors='pt', truncation=True, max_length=512)
+    with torch.no_grad():
+        outputs = model(**inputs)
+    # Perform mean pooling on the token embeddings
+    embeddings = outputs.last_hidden_state.mean(dim=1).squeeze().tolist()
+    return embeddings
 
 @app.route("/")
 def home():
@@ -217,18 +247,42 @@ def login():
 
         conn = get_connection()
         with conn.cursor() as cursor:
-            query = "SELECT Resume, FirstName, LastName FROM User WHERE Email = %s AND Password = %s;"
+            query = "SELECT UserId, Resume, ResumeEmbedding, FirstName, LastName FROM User WHERE Email = %s AND Password = %s;"
             cursor.execute(query, (email, password))
             result = cursor.fetchone()
 
             if not result:
                 return jsonify({"error": "Invalid email or password"}), 401
 
-            resume, first_name, last_name = result
+            user_id, resume, resume_embedding, first_name, last_name = result
+
+            # Check and compute ResumeEmbedding if not present
+            if not resume_embedding:
+                embedding = compute_embedding(resume)
+                embedding_json = json.dumps(embedding)
+                update_query = "UPDATE User SET ResumeEmbedding = %s WHERE UserId = %s;"
+                cursor.execute(update_query, (embedding_json, user_id))
+                conn.commit()
+                resume_embedding = embedding
+            else:
+                embedding = json.loads(resume_embedding)
+
+            # Check and compute JobEmbeddings for jobs without them
+            job_query = "SELECT JobId, Description FROM Job WHERE JobEmbedding IS NULL;"
+            cursor.execute(job_query)
+            jobs_to_update = cursor.fetchall()
+
+            for job_id, description in jobs_to_update:
+                job_embedding = compute_embedding(description)
+                job_embedding_json = json.dumps(job_embedding)
+                update_job_query = "UPDATE Job SET JobEmbedding = %s WHERE JobId = %s;"
+                cursor.execute(update_job_query, (job_embedding_json, job_id))
+            conn.commit()
 
             return jsonify({
                 "message": "Login successful",
                 "user": {
+                    "UserId": user_id,
                     "Resume": resume,
                     "FirstName": first_name,
                     "LastName": last_name
@@ -240,6 +294,7 @@ def login():
     finally:
         if conn:
             conn.close()
+
 
 @app.route('/user', methods=['GET'])
 def get_user():
@@ -309,9 +364,69 @@ def register():
             
             cursor.execute(insert_query, (first_name, last_name, email, password, resume))
             conn.commit()
-
+            
             # Return success message
             return jsonify({"message": "Account created successfully"}), 201
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+@app.route('/recommended', methods=['GET'])
+def recommended_jobs():
+    print(request.args.get('firstName'))
+    conn = None
+    try:
+        
+        user_id = request.args.get('firstName')
+        if not user_id:
+            return jsonify({"error": "Name is required", "request": request.args}), 400
+
+        conn = get_connection()
+        with conn.cursor() as cursor:
+            # Retrieve user's resume embedding
+            user_query = "SELECT ResumeEmbedding FROM User WHERE FirstName = %s;"
+            cursor.execute(user_query, (user_id,))
+            user_result = cursor.fetchone()
+
+            if not user_result or not user_result[0]:
+                return jsonify({"error": "User embedding not found"}), 404
+
+            user_embedding = json.loads(user_result[0])
+
+            # Retrieve all job embeddings
+            job_query = "SELECT JobId, CompanyName, JobRole, Description, JobEmbedding FROM Job;"
+            cursor.execute(job_query)
+            jobs = cursor.fetchall()
+
+            recommended = []
+            for job in jobs:
+                job_id, company_name, job_role, description, job_embedding = job
+                if not job_embedding:
+                    continue  # Skip jobs without embedding
+
+                job_embedding = json.loads(job_embedding)
+                similarity = cosine_similarity(user_embedding, job_embedding)
+
+                recommended.append({
+                    "JobId": job_id,
+                    "CompanyName": company_name,
+                    "JobRole": job_role,
+                    "Description": description,
+                    "Similarity": similarity
+                })
+
+            # Sort jobs by similarity in descending order
+            recommended_sorted = sorted(recommended, key=lambda x: x["Similarity"], reverse=True)
+
+            # Define the percentage of top jobs to return (e.g., top 10%)
+            top_percentage = 10
+            top_count = max(1, len(recommended_sorted) * top_percentage // 100)
+            top_jobs = recommended_sorted[:top_count]
+          
+            return jsonify(top_jobs), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

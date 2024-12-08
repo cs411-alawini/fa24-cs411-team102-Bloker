@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Job Search Application</title>
-        <link rel="stylesheet" href="styles.css">
-        <script
-          src="https://maps.googleapis.com/maps/api/js?key=API_KEY&callback=initMap&libraries=visualization&v=weekly"
-          defer
-        ></script>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Search Application</title>
+    <link rel="stylesheet" href="styles.css">
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=API_KEY&callback=initMap&libraries=visualization&v=weekly"
+      defer
+    ></script>
+</head>
 <body>
     <header>
         <h1>Job Search Application</h1>
@@ -60,32 +60,35 @@
             </table>
         </div>
 
-        <div class="jobs-box" id="recommended-jobs-box">
-            <h2>Recommended Jobs</h2>
-            <button id="refresh-recommended-jobs-btn">Refresh Recommended Jobs</button>
-            <table id="recommended-jobs-table">
-                <thead>
-                    <tr>
-                        <th>JobId</th>
-                        <th>CompanyName</th>
-                        <th>JobRole</th>
-                        <th>City</th>
-                        <th>State</th>
-                        <th>ZipCode</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Recommended jobs will be dynamically added here -->
-                </tbody>
-            </table>
+        <div class="jobs-box" id="recommended-jobs-table">
+            <h2>Top 5 Recommended Jobs</h2>
+                <table id="recommended-jobs-table">
+                    <thead>
+                        <tr>
+                            <th>Job ID</th>
+                            <th>Company Name</th>
+                            <th>Job Role</th>
+                            <th>Description</th>
+                            <th>Similarity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Recommended jobs will be populated here -->
+                    </tbody>
+                </table>
         </div>
     </div>
 
-    <script>
+    <!-- Load script.js with defer -->
+    <script src="script.js" defer></script>
+    
+    <!-- Add defer to the inline script -->
+    <script defer>
         document.addEventListener("DOMContentLoaded", () => {
             fetchUserInfo(); // Call your existing function to update user info on page load
+            fetchRecommendedJobs(); // Call your existing function to fetch recommended jobs on page load
         });
     </script>
-    <script src="script.js"></script>
+   
 </body>
 </html>

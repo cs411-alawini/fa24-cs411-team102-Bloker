@@ -1,5 +1,7 @@
 let map, heatmap;
 
+console.log("JavaScript file loaded successfully.");
+
 function initMap() {
   map = new google.maps.Map(document.getElementById("map"), {
     zoom: 13,
@@ -564,9 +566,82 @@ async function loginAccount(event) {
     }
 }
 
+function fetchRecommendedJobs() {
+    console.log("Fetching recommended jobs...", localStorage);
+    const storedUser = localStorage.getItem('user');
+    
+    if (!storedUser) {
+        console.error("User info not found in localStorage");
+        return
+    }
+    localStorage.setItem('userInfo', JSON.stringify(storedUser));
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    console.log("User info from localStorage:", userInfo);
+    const firstName = JSON.parse(userInfo).firstName;
+    console.log(firstName);
+    
+    const url = `http://127.0.0.1:5000/recommended?firstName=${firstName}`;
+    fetch(url)
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`Error fetching recommended jobs: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then((jobs) => {
+            console.log("Recommended Jobs Fetched:", jobs);
+            const top5Jobs = jobs.slice(0, 5); // Take top 5 jobs
+            populateJobsTable(top5Jobs, 'recommended-jobs-table');
+        })
+        .catch((error) => console.error('Error:', error));
+}
+
+function populateJobsTable(jobs, tableId) {
+    const tableElement = document.getElementById(tableId);
+    if (!tableElement) {
+        console.error(`Table with ID '${tableId}' not found.`);
+        return;
+    }
+    const tbody = tableElement.querySelector('tbody');
+    tbody.innerHTML = ''; // Clear existing rows
+
+    if (!jobs || jobs.length === 0) {
+        const noDataRow = document.createElement('tr');
+        // Adjust colspan based on the number of table columns
+        const colspan = tableId === 'all-jobs-table' ? 6 : 5;
+        noDataRow.innerHTML = `<td colspan="${colspan}">No jobs found.</td>`;
+        tbody.appendChild(noDataRow);
+        return;
+    }
+
+    jobs.forEach((job) => {
+        const row = document.createElement('tr');
+        
+        if (tableId === 'all-jobs-table') {
+            row.innerHTML = `
+                <td>${job.JobId}</td>
+                <td>${job.CompanyName}</td>
+                <td>${job.JobRole}</td>
+                <td>${job.City}</td>
+                <td>${job.State}</td>
+                <td>${job.ZipCode}</td>
+            `;
+        } else if (tableId === 'recommended-jobs-table') {
+            row.innerHTML = `
+                <td>${job.JobId}</td>
+                <td>${job.CompanyName}</td>
+                <td>${job.JobRole}</td>
+                <td>${job.Description}</td>
+                <td>${job.Similarity.toFixed(2)}</td>
+            `;
+        }
+        
+        tbody.appendChild(row);
+    });
+}
+
 // Update the document with user information
 function fetchUserInfo() {
-    console.log("Fetching user information from localStorage...");
 
     try {
         const storedUser = localStorage.getItem('user');
@@ -605,7 +680,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function fetchAllJobs() {
-        const url = 'http://localhost:5000/jobs';
+        const url = 'http://127.0.0.1:5000/jobs';
         fetch(url)
             .then((response) => {
                 if (!response.ok) {
@@ -621,46 +696,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // TODO: Change endpoint to a new endpoint returning recommended jobs
-    function fetchRecommendedJobs() {
-        const url = 'http://localhost:5000/jobs'; // Currently using the same endpoint
-        fetch(url)
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error(`Error fetching recommended jobs: ${response.statusText}`);
-                }
-                return response.json();
-            })
-            .then((jobs) => {
-                console.log("Recommended Jobs Fetched:", jobs);
-                populateJobsTable(jobs, 'recommended-jobs-table');
-            })
-            .catch((error) => console.error('Error:', error));
-    }
+  // Updated fetchRecommendedJobs function to fetch top 5 recommended jobs
 
-    function populateJobsTable(jobs, tableId) {
-        const tbody = document.getElementById(tableId).querySelector('tbody');
-        tbody.innerHTML = ''; // Clear existing rows
-
-        if (!jobs || jobs.length === 0) {
-            const noDataRow = document.createElement('tr');
-            noDataRow.innerHTML = '<td colspan="6">No jobs found.</td>';
-            tbody.appendChild(noDataRow);
-            return;
-        }
-
-        jobs.forEach((job) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${job[0]}</td>
-                <td>${job[1]}</td>
-                <td>${job[2]}</td>
-                <td>${job[3]}</td>
-                <td>${job[4]}</td>
-                <td>${job[5]}</td>
-            `;
-            tbody.appendChild(row);
-        });
-    }
 
     // TODO: get specific user data, return it, and display it 
     // TODO: We will need to make a function to update and display a user's data on the left side of the screen, for now, just query it and return it in a json format
@@ -671,10 +708,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('refresh-recommended-jobs-btn').addEventListener('click', fetchRecommendedJobs);
     document.getElementById('toggle-heatmap-btn').addEventListener('click', toggleHeatmap);
     fetchAllJobs();
-    fetchRecommendedJobs();
 
     // If on home.html, initialize and fetch user info
     if (window.location.pathname.includes("home.html")) {
         fetchUserInfo(); // Populate the form with the data
+        fetchRecommendedJobs(); // Fetch recommended jobs
     }
 });
