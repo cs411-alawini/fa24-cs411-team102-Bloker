@@ -195,11 +195,24 @@ def get_jobs():
             if where_clauses:
                 query += " WHERE " + " OR ".join(where_clauses)
             query += " LIMIT %s OFFSET %s;"
-
+            print(query)
             params = filter_params + [limit, offset]
+            print(f"Executing query: {cursor.mogrify(query, params)}")  # For debugging
             cursor.execute(query, params)
             results = cursor.fetchall()
-            return jsonify(results), 200
+            # Convert results to list of dicts for better readability
+            jobs = [
+                {
+                    "JobId": row[0],
+                    "CompanyName": row[1],
+                    "JobRole": row[2],
+                    "City": row[3],
+                    "State": row[4],
+                    "ZipCode": row[5]
+                }
+                for row in results
+            ]
+            return jsonify(jobs), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:

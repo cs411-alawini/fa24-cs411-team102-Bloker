@@ -42,6 +42,33 @@
     <div class="jobs-container">
         <div class="jobs-box" id="all-jobs-box">
             <h2>All Jobs</h2>
+            <div class="search-bar">
+                <h3>Search Jobs</h3>
+                <form id="search-form">
+                    <div class="form-group">
+                        <label for="search-company">Company Name:</label>
+                        <input type="text" id="search-company" placeholder="e.g., TechCorp">
+                    </div>
+                    <div class="form-group">
+                        <label for="search-role">Job Role:</label>
+                        <input type="text" id="search-role" placeholder="e.g., Software Engineer">
+                    </div>
+                    <div class="form-group">
+                        <label for="search-city">City:</label>
+                        <input type="text" id="search-city" placeholder="e.g., San Francisco">
+                    </div>
+                    <div class="form-group">
+                        <label for="search-state">State:</label>
+                        <input type="text" id="search-state" placeholder="e.g., CA">
+                    </div>
+                    <div class="form-group">
+                        <label for="search-zipcode">Zip Code:</label>
+                        <input type="text" id="search-zipcode" placeholder="e.g., 94103">
+                    </div>
+                    <button type="submit">Search</button>
+                    <button type="button" id="clear-search-btn">Clear</button>
+                </form>
+            </div>
             <button id="refresh-jobs-btn">Refresh Jobs</button>
             <table id="all-jobs-table">
                 <thead>

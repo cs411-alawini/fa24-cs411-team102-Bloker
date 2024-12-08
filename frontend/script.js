@@ -671,16 +671,29 @@ function fetchUserInfo() {
 }
 
 window.initMap = initMap;
-
-// Initialize user information on page load
 document.addEventListener("DOMContentLoaded", () => {
     const loginForm = document.getElementById("login-form");
     if (loginForm) {
         loginForm.addEventListener("submit", loginAccount);
     }
 
-    function fetchAllJobs() {
-        const url = 'http://127.0.0.1:5000/jobs';
+    function fetchAllJobs(searchParams = {}) {
+        let url = 'http://127.0.0.1:5000/jobs';
+        const queryParameters = new URLSearchParams();
+
+        // Append search parameters to the query
+        for (const key in searchParams) {
+            if (searchParams[key]) {
+                queryParameters.append(key, searchParams[key]);
+            }
+        }
+
+        if ([...queryParameters].length > 0) {
+            url += `?${queryParameters.toString()}`;
+        }
+
+        console.log(`Fetching jobs with URL: ${url}`);
+
         fetch(url)
             .then((response) => {
                 if (!response.ok) {
@@ -695,18 +708,59 @@ document.addEventListener("DOMContentLoaded", () => {
             .catch((error) => console.error('Error:', error));
     }
 
-    // TODO: Change endpoint to a new endpoint returning recommended jobs
-  // Updated fetchRecommendedJobs function to fetch top 5 recommended jobs
+    // Handle Search Form Submission
+    const searchForm = document.getElementById('search-form');
+    if (searchForm) {
+        searchForm.addEventListener('submit', (event) => {
+            event.preventDefault();
 
+            // Collect search input values
+            const companyName = document.getElementById('search-company').value.trim();
+            const jobRole = document.getElementById('search-role').value.trim();
+            const city = document.getElementById('search-city').value.trim();
+            const state = document.getElementById('search-state').value.trim();
+            const zipCode = document.getElementById('search-zipcode').value.trim();
 
-    // TODO: get specific user data, return it, and display it 
-    // TODO: We will need to make a function to update and display a user's data on the left side of the screen, for now, just query it and return it in a json format
+            const searchParams = {};
 
+            if (companyName) searchParams.company_name = companyName;
+            if (jobRole) searchParams.job_role = jobRole;
+            if (city) searchParams.city = city;
+            if (state) searchParams.state = state;
+            if (zipCode) searchParams.zip_code = zipCode;
+
+            console.log("Search Parameters:", searchParams);
+
+            fetchAllJobs(searchParams);
+        });
+
+        // Handle Clear Search Button
+        const clearSearchBtn = document.getElementById('clear-search-btn');
+        if (clearSearchBtn) {
+            clearSearchBtn.addEventListener('click', () => {
+                // Clear all search inputs
+                document.getElementById('search-company').value = '';
+                document.getElementById('search-role').value = '';
+                document.getElementById('search-city').value = '';
+                document.getElementById('search-state').value = '';
+                document.getElementById('search-zipcode').value = '';
+
+                // Fetch all jobs without filters
+                fetchAllJobs();
+            });
+        }
+    }
 
     // Attach event listeners
-    document.getElementById('refresh-jobs-btn').addEventListener('click', fetchAllJobs);
-    document.getElementById('refresh-recommended-jobs-btn').addEventListener('click', fetchRecommendedJobs);
+    document.getElementById('refresh-jobs-btn').addEventListener('click', () => fetchAllJobs());
     document.getElementById('toggle-heatmap-btn').addEventListener('click', toggleHeatmap);
+
+    // Assuming there's a button with ID 'refresh-recommended-jobs-btn'
+    const refreshRecommendedBtn = document.getElementById('refresh-recommended-jobs-btn');
+    if (refreshRecommendedBtn) {
+        refreshRecommendedBtn.addEventListener('click', fetchRecommendedJobs);
+    }
+
     fetchAllJobs();
 
     // If on home.html, initialize and fetch user info
