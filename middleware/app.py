@@ -1,6 +1,6 @@
 # app.py - Updated to support new features
 import os
-
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C:/Users/nikra/Downloads/project-439622-321adf136869.json"
 from flask import Flask, request, jsonify
 from google.cloud.sql.connector import Connector
 import sys
@@ -19,9 +19,9 @@ CORS(app)
 
 
 # Database configuration
-db_user = ""
-db_pass = ""
-db_name = ""
+db_user = "drava"
+db_pass = "411pass"
+db_name = "411project"
 instance_connection_name = "project-439622:us-central1:sqlpt3stage"
 
 # Initialize Connector
@@ -306,7 +306,7 @@ def register():
                 INSERT INTO User (FirstName, LastName, Email, Password, Resume)
                 VALUES (%s, %s, %s, %s, %s);
             """
-            
+          
             cursor.execute(insert_query, (first_name, last_name, email, password, resume))
             conn.commit()
 
