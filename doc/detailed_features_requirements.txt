@@ -1,0 +1,49 @@
+Transaction Example: We use a transaction to create a company and location before creating a job (required by FK). Then, we execute and commit the transaction.
+
+with conn.cursor() as cursor:
+            conn.autocommit = False
+
+            select_company_query = "SELECT CompanyName FROM Company WHERE CompanyName = %s;"
+            cursor.execute(select_company_query, (company_name,))
+            existing_company = cursor.fetchone()
+
+            if not existing_company:
+                insert_company_query = "INSERT INTO Company (CompanyName) VALUES (%s);"
+                cursor.execute(insert_company_query, (company_name,))
+
+            insert_location_query = """
+                INSERT INTO Location (City, State, ZipCode)
+                VALUES (%s, %s, %s)
+                ON DUPLICATE KEY UPDATE LocationId=LAST_INSERT_ID(LocationId);
+            """
+            cursor.execute(insert_location_query, (city, state, zip_code))
+            location_id = cursor.lastrowid
+
+            # Insert the Job record
+            insert_job_query = """
+                INSERT INTO Job (CompanyName, JobRole, LocationId, Description)
+                VALUES (%s, %s, %s, %s);
+            """
+            cursor.execute(insert_job_query, (company_name, job_role, location_id, description))
+
+            conn.commit()
+
+Stored Procedure:
+ -- FINISH (Niki)
+
+Triggers:
+
+Created a trigger that logs new job entries into the JobLog table.
+
+DELIMITER $$
+CREATE TRIGGER LogJobInsertion
+AFTER INSERT ON Job
+FOR EACH ROW
+BEGIN
+    INSERT INTO JobLog (JobId, Action, ActionTime)
+    VALUES (NEW.JobId, 'Job Created', NOW());
+END$$
+DELIMITER ;
+
+Constraints: 
+- Discuss FK and PK constraints

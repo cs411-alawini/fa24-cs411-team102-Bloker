@@ -70,6 +70,40 @@
                 </form>
             </div>
             <button id="refresh-jobs-btn">Refresh Jobs</button>
+            <!-- Add a button to show/hide the add job form -->
+            <button id="show-add-job-form-btn">Add New Job</button>
+
+            <!-- Hidden form for adding a new job -->
+            <form id="add-job-form" style="display: none; margin-top:20px;">
+                <h3>Add a New Job</h3>
+                <div class="form-group">
+                    <label for="add-company">Company Name:</label>
+                    <input type="text" id="add-company" required>
+                </div>
+                <div class="form-group">
+                    <label for="add-job-role">Job Role:</label>
+                    <input type="text" id="add-job-role" required>
+                </div>
+                <div class="form-group">
+                    <label for="add-city">City:</label>
+                    <input type="text" id="add-city" required>
+                </div>
+                <div class="form-group">
+                    <label for="add-state">State:</label>
+                    <input type="text" id="add-state" required>
+                </div>
+                <div class="form-group">
+                    <label for="add-zipcode">Zip Code:</label>
+                    <input type="text" id="add-zipcode" required>
+                </div>
+                <div class="form-group">
+                    <label for="add-description">Description:</label>
+                    <textarea id="add-description" required></textarea>
+                </div>
+                <button type="submit">Submit</button>
+                <button type="button" id="cancel-add-job-btn">Cancel</button>
+            </form>
+
             <table id="all-jobs-table">
                 <thead>
                     <tr>
@@ -106,16 +140,13 @@
         </div>
     </div>
 
-    <!-- Load script.js with defer -->
     <script src="script.js" defer></script>
     
-    <!-- Add defer to the inline script -->
     <script defer>
         document.addEventListener("DOMContentLoaded", () => {
-            fetchUserInfo(); // Call your existing function to update user info on page load
-            fetchRecommendedJobs(); // Call your existing function to fetch recommended jobs on page load
+            fetchUserInfo(); 
+            fetchRecommendedJobs(); 
         });
     </script>
-   
 </body>
 </html>

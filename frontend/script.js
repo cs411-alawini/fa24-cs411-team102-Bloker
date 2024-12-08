@@ -671,7 +671,73 @@ function fetchUserInfo() {
 }
 
 window.initMap = initMap;
+
 document.addEventListener("DOMContentLoaded", () => {
+
+    const showAddJobFormBtn = document.getElementById("show-add-job-form-btn");
+    const addJobForm = document.getElementById("add-job-form");
+    const cancelAddJobBtn = document.getElementById("cancel-add-job-btn");
+
+    if (showAddJobFormBtn) {
+        showAddJobFormBtn.addEventListener("click", () => {
+            addJobForm.style.display = "block";
+        });
+    }
+
+    if (cancelAddJobBtn) {
+        cancelAddJobBtn.addEventListener("click", () => {
+            addJobForm.reset();
+            addJobForm.style.display = "none";
+        });
+    }
+
+    if (addJobForm) {
+        addJobForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const companyName = document.getElementById('add-company').value.trim();
+            const jobRole = document.getElementById('add-job-role').value.trim();
+            const city = document.getElementById('add-city').value.trim();
+            const state = document.getElementById('add-state').value.trim();
+            const zipCode = document.getElementById('add-zipcode').value.trim();
+            const description = document.getElementById('add-description').value.trim();
+
+            const requestBody = {
+                CompanyName: companyName,
+                JobRole: jobRole,
+                City: city,
+                State: state,
+                ZipCode: zipCode,
+                Description: description
+            };
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/jobs/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Error adding job');
+                }
+
+                alert("Job added successfully!");
+                // Hide the form and reset it
+                addJobForm.reset();
+                addJobForm.style.display = "none";
+
+                // Refresh the jobs list
+                fetchAllJobs();
+
+            } catch (error) {
+                console.error('Error adding job:', error.message);
+                alert(`Error adding job: ${error.message}`);
+            }
+        });
+    }
+
+
     const loginForm = document.getElementById("login-form");
     if (loginForm) {
         loginForm.addEventListener("submit", loginAccount);

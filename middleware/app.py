@@ -21,7 +21,7 @@ CORS(app)
 # Database configuration
 db_user = "drava"
 db_pass = "411pass"
-db_name = ""
+db_name = "411project"
 instance_connection_name = "project-439622:us-central1:sqlpt3stage"
 
 # Initialize Connector
@@ -67,15 +67,12 @@ def manage_user():
         conn = get_connection()
         with conn.cursor() as cursor:
             if request.method == 'GET':
-                # Fetch user information
-                email = request.args.get('email')  # Get 'email' query parameter
+                email = request.args.get('email')
                 limit = request.args.get('limit', default=None, type=int)
                 if email:
-                    # Query for a specific user by email
                     query = "SELECT UserId, Resume, Email, FirstName, LastName FROM User WHERE Email = %s;"
                     cursor.execute(query, (email,))
                 else:
-                    # Query for all users or limit
                     query = "SELECT UserId, Resume, Email, FirstName, LastName FROM User"
                     params = []
                     if limit:
@@ -99,11 +96,9 @@ def manage_user():
                 return jsonify(users), 200
 
             elif request.method == 'POST':
-                # POST expects JSON
                 if not request.is_json:
                     return jsonify({"error": "Request must be JSON and have 'Content-Type: application/json' header"}), 415
                 
-                # Add new user
                 data = request.get_json()
                 query = """
                     INSERT INTO User (Resume, Email, Password, FirstName, LastName)
@@ -120,11 +115,9 @@ def manage_user():
                 return jsonify({"message": "User added successfully"}), 201
 
             elif request.method == 'PUT':
-                # PUT expects JSON
                 if not request.is_json:
                     return jsonify({"error": "Request must be JSON and have 'Content-Type: application/json' header"}), 415
                 
-                # Update user
                 data = request.get_json()
                 query = """
                     UPDATE User
@@ -142,7 +135,6 @@ def manage_user():
                 return jsonify({"message": "User updated successfully"}), 200
 
             elif request.method == 'DELETE':
-                # Delete user
                 email = request.args.get('email')
                 if not email:
                     return jsonify({"error": "Email parameter is required for deletion"}), 400
@@ -157,7 +149,7 @@ def manage_user():
     finally:
         if conn:
             conn.close()
-# Show filtered jobs with pagination and city search
+
 @app.route('/jobs', methods=['GET'])
 def get_jobs():
     filters = {
@@ -172,20 +164,18 @@ def get_jobs():
     where_clauses = []
     filter_params = []
 
-    # Add filters to the query dynamically
     for key, value in filters.items():
         if value:
             where_clauses.append(f"{key} LIKE %s")
             filter_params.append(f"%{value}%")
 
     offset = request.args.get('offset', default=0, type=int)
-    limit = 10  # Default limit
+    limit = 10  
 
-    conn = None  # Initialize conn
+    conn = None
     try:
         conn = get_connection()
         with conn.cursor() as cursor:
-            # Build the base query
             query = """
                 SELECT Job.JobId, Job.CompanyName, Job.JobRole, Location.City, Location.State, Location.ZipCode
                 FROM Job
@@ -197,10 +187,9 @@ def get_jobs():
             query += " LIMIT %s OFFSET %s;"
             print(query)
             params = filter_params + [limit, offset]
-            print(f"Executing query: {cursor.mogrify(query, params)}")  # For debugging
+            print(f"Executing query: {cursor.mogrify(query, params)}") 
             cursor.execute(query, params)
             results = cursor.fetchall()
-            # Convert results to list of dicts for better readability
             jobs = [
                 {
                     "JobId": row[0],
@@ -218,7 +207,7 @@ def get_jobs():
     finally:
         if conn:
             conn.close()
-# Heat map query
+
 @app.route('/heatmap', methods=['GET'])
 def heatmap_data():
     city = request.args.get('city')
@@ -228,7 +217,6 @@ def heatmap_data():
     try:
         conn = get_connection()
         with conn.cursor() as cursor:
-            # Count jobs by nearby locations
             query = """
                 SELECT Location.City, Location.State, COUNT(Job.JobId) as JobCount
                 FROM Job
@@ -269,7 +257,6 @@ def login():
 
             user_id, resume, resume_embedding, first_name, last_name = result
 
-            # Check and compute ResumeEmbedding if not present
             if not resume_embedding:
                 embedding = compute_embedding(resume)
                 embedding_json = json.dumps(embedding)
@@ -280,7 +267,6 @@ def login():
             else:
                 embedding = json.loads(resume_embedding)
 
-            # Check and compute JobEmbeddings for jobs without them
             job_query = "SELECT JobId, Description FROM Job WHERE JobEmbedding IS NULL;"
             cursor.execute(job_query)
             jobs_to_update = cursor.fetchall()
@@ -341,46 +327,41 @@ def get_user():
 
 @app.route('/auth/register', methods=['POST'])
 def register():
-    conn = None 
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 415
+
+    data = request.get_json()
+    first_name = data.get("firstName")
+    last_name = data.get("lastName")
+    email = data.get("email")
+    password = data.get("password")
+    resume = data.get("resume")
+
+    if not all([first_name, last_name, email, password, resume]):
+        return jsonify({"error": "All fields are required"}), 400
+
+    conn = get_connection()
     try:
-        if not request.is_json:
-            return jsonify({"error": "Request must be JSON and have 'Content-Type: application/json' header"}), 415
-
-        # Get the data from the request body
-        data = request.get_json()
-        first_name = data.get("firstName")
-        last_name = data.get("lastName")
-        email = data.get("email")
-        password = data.get("password")
-        resume = data.get("resume")
-        
-        # Check if all required fields are provided
-        if not all([first_name, last_name, email, password, resume]):
-            
-            return jsonify({"error": "All fields (FirstName, LastName, Email, Password, Resume) are required"}), 400
-        
-        # Check if the email already exists in the database
-        conn = get_connection()
         with conn.cursor() as cursor:
-            query = "SELECT Email FROM User WHERE Email = %s;"
-            cursor.execute(query, (email,))
-            existing_user = cursor.fetchone()
-            
-            if existing_user:
-                return jsonify({"error": "Email is already in use"}), 400
+            cursor.callproc('RegisterNewUserAdvanced', [first_name, last_name, email, password, resume])
+            result = cursor.fetchall()
 
-            # Insert new user data into the User table
-            insert_query = """
-                INSERT INTO User (FirstName, LastName, Email, Password, Resume)
-                VALUES (%s, %s, %s, %s, %s);
-            """
-            
-            cursor.execute(insert_query, (first_name, last_name, email, password, resume))
-            conn.commit()
-            
-            # Return success message
-            return jsonify({"message": "Account created successfully"}), 201
+    
+            if not result:
+                return jsonify({"error": "No response from stored procedure"}), 500
 
+            # should be Status, Message, NewUserId, SameLastNameCount, TotalUsers
+            status, message, new_user_id, same_lastname_count, total_users = result[0]
+
+            if status == 'ERROR':
+                return jsonify({"error": message}), 400
+            else:
+                return jsonify({
+                    "message": message,
+                    "NewUserId": new_user_id,
+                    "SameLastNameCount": same_lastname_count,
+                    "TotalUsers": total_users
+                }), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
@@ -399,7 +380,6 @@ def recommended_jobs():
 
         conn = get_connection()
         with conn.cursor() as cursor:
-            # Retrieve user's resume embedding
             user_query = "SELECT ResumeEmbedding FROM User WHERE FirstName = %s;"
             cursor.execute(user_query, (user_id,))
             user_result = cursor.fetchone()
@@ -409,7 +389,6 @@ def recommended_jobs():
 
             user_embedding = json.loads(user_result[0])
 
-            # Retrieve all job embeddings
             job_query = "SELECT JobId, CompanyName, JobRole, Description, JobEmbedding FROM Job;"
             cursor.execute(job_query)
             jobs = cursor.fetchall()
@@ -418,7 +397,7 @@ def recommended_jobs():
             for job in jobs:
                 job_id, company_name, job_role, description, job_embedding = job
                 if not job_embedding:
-                    continue  # Skip jobs without embedding
+                    continue
 
                 job_embedding = json.loads(job_embedding)
                 similarity = cosine_similarity(user_embedding, job_embedding)
@@ -431,10 +410,8 @@ def recommended_jobs():
                     "Similarity": similarity
                 })
 
-            # Sort jobs by similarity in descending order
             recommended_sorted = sorted(recommended, key=lambda x: x["Similarity"], reverse=True)
 
-            # Define the percentage of top jobs to return (e.g., top 10%)
             top_percentage = 10
             top_count = max(1, len(recommended_sorted) * top_percentage // 100)
             top_jobs = recommended_sorted[:top_count]
@@ -446,6 +423,59 @@ def recommended_jobs():
     finally:
         if conn:
             conn.close()
+
+@app.route('/jobs/add', methods=['POST'])
+def add_job():
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 415
+    
+    data = request.get_json()
+    company_name = data.get('CompanyName')
+    job_role = data.get('JobRole')
+    city = data.get('City')
+    state = data.get('State')
+    zip_code = data.get('ZipCode')
+    description = data.get('Description')
+
+    if not all([company_name, job_role, city, state, zip_code, description]):
+        return jsonify({"error": "All fields are required"}), 400
+
+    conn = get_connection()
+    try:
+        with conn.cursor() as cursor:
+            conn.autocommit = False
+
+            select_company_query = "SELECT CompanyName FROM Company WHERE CompanyName = %s;"
+            cursor.execute(select_company_query, (company_name,))
+            existing_company = cursor.fetchone()
+
+            if not existing_company:
+                insert_company_query = "INSERT INTO Company (CompanyName) VALUES (%s);"
+                cursor.execute(insert_company_query, (company_name,))
+
+            insert_location_query = """
+                INSERT INTO Location (City, State, ZipCode)
+                VALUES (%s, %s, %s)
+                ON DUPLICATE KEY UPDATE LocationId=LAST_INSERT_ID(LocationId);
+            """
+            cursor.execute(insert_location_query, (city, state, zip_code))
+            location_id = cursor.lastrowid
+
+            insert_job_query = """
+                INSERT INTO Job (CompanyName, JobRole, LocationId, Description)
+                VALUES (%s, %s, %s, %s);
+            """
+            cursor.execute(insert_job_query, (company_name, job_role, location_id, description))
+
+            conn.commit()
+            return jsonify({"message": "Job, location, and company (if newly added) recorded successfully"}), 201
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
 
 
 if __name__ == '__main__':

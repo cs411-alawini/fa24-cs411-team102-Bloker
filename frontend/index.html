@@ -67,7 +67,7 @@
                 const data = await response.json();
                 if (response.ok) {
                     if (data.token) localStorage.setItem('authToken', data.token);
-                    window.location.href = 'index.html';
+                    window.location.href = 'home.html';
                 } else {
                     document.getElementById('error-message').innerText = data.message || 'Login failed';
                     document.getElementById('error-message').style.display = 'block';
@@ -96,6 +96,8 @@
                     body: JSON.stringify({ firstName, lastName, email, password, resume }),
                 });
                 const data = await response.json();
+                console.log('Response from register endpoint:', data);
+                
                 if (response.ok) {
                     window.location.href = 'index.html';  // Redirect to index page after account creation
                 } else {
