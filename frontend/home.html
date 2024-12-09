@@ -1,15 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Job Search Application</title>
-        <link rel="stylesheet" href="styles.css">
-        <script
-          src="https://maps.googleapis.com/maps/api/js?key=API_KEY&callback=initMap&libraries=visualization&v=weekly"
-          defer
-        ></script>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Search Application</title>
+    <link rel="stylesheet" href="styles.css">
+    <script async defer
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpMcEdngFJI0Vi6LzrCLbcy-Hs7bbcxqI&libraries=visualization&callback=initMap"></script>
+</head>
 <body>
     <header>
         <h1>Job Search Application</h1>
@@ -25,24 +23,92 @@
                 <label for="lastName">Last Name:</label>
                 <input type="text" id="lastName" placeholder="Enter your last name">
 
+                <label for="Email">Email:</label>
+                <input type="text" id="email" placeholder="Enter your email">
+
                 <label for="resume">Resume:</label>
                 <textarea id="resume" placeholder="Paste your resume here"></textarea>
 
                 <button type="submit">Save</button>
+
+                <button id="delete-account-btn" style="margin-top: 20px; background-color: #dc3545; color: white; border: none; padding: 10px; font-size: 1rem; cursor: pointer; border-radius: 5px;">
+                    Delete this account
+                </button>
             </form>
         </div>
 
         <div class="map-section">
             <h2>Job Heatmap</h2>
             <div id="map"></div>
-            <button id="toggle-heatmap-btn" style="margin-top: 10px;">Toggle Heatmap</button>
+            <!-- <button id="toggle-heatmap-btn" style="margin-top: 10px;">Toggle Heatmap</button> -->
         </div>
     </div>
 
     <div class="jobs-container">
         <div class="jobs-box" id="all-jobs-box">
             <h2>All Jobs</h2>
+            <div class="search-bar">
+                <h3>Search Jobs</h3>
+                <form id="search-form">
+                    <div class="form-group">
+                        <label for="search-company">Company Name:</label>
+                        <input type="text" id="search-company" placeholder="e.g., TechCorp">
+                    </div>
+                    <div class="form-group">
+                        <label for="search-role">Job Role:</label>
+                        <input type="text" id="search-role" placeholder="e.g., Software Engineer">
+                    </div>
+                    <div class="form-group">
+                        <label for="search-city">City:</label>
+                        <input type="text" id="search-city" placeholder="e.g., San Francisco">
+                    </div>
+                    <div class="form-group">
+                        <label for="search-state">State:</label>
+                        <input type="text" id="search-state" placeholder="e.g., CA">
+                    </div>
+                    <div class="form-group">
+                        <label for="search-zipcode">Zip Code:</label>
+                        <input type="text" id="search-zipcode" placeholder="e.g., 94103">
+                    </div>
+                    <button type="submit">Search</button>
+                    <button type="button" id="clear-search-btn">Clear</button>
+                </form>
+            </div>
             <button id="refresh-jobs-btn">Refresh Jobs</button>
+            <!-- Add a button to show/hide the add job form -->
+            <button id="show-add-job-form-btn">Add New Job</button>
+
+            <!-- Hidden form for adding a new job -->
+            <form id="add-job-form" style="display: none; margin-top:20px;">
+                <h3>Add a New Job</h3>
+                <div class="form-group">
+                    <label for="add-company">Company Name:</label>
+                    <input type="text" id="add-company" required>
+                </div>
+                <div class="form-group">
+                    <label for="add-job-role">Job Role:</label>
+                    <input type="text" id="add-job-role" required>
+                </div>
+                <div class="form-group">
+                    <label for="add-city">City:</label>
+                    <input type="text" id="add-city" required>
+                </div>
+                <div class="form-group">
+                    <label for="add-state">State:</label>
+                    <input type="text" id="add-state" required>
+                </div>
+                <div class="form-group">
+                    <label for="add-zipcode">Zip Code:</label>
+                    <input type="text" id="add-zipcode" required>
+                </div>
+                <div class="form-group">
+                    <label for="add-description">Description:</label>
+                    <textarea id="add-description" required></textarea>
+                </div>
+                <button type="submit">Submit</button>
+                <button type="button" id="cancel-add-job-btn">Cancel</button>
+            </form>
+
             <table id="all-jobs-table">
                 <thead>
                     <tr>
@@ -60,32 +126,32 @@
             </table>
         </div>
 
-        <div class="jobs-box" id="recommended-jobs-box">
-            <h2>Recommended Jobs</h2>
-            <button id="refresh-recommended-jobs-btn">Refresh Recommended Jobs</button>
-            <table id="recommended-jobs-table">
-                <thead>
-                    <tr>
-                        <th>JobId</th>
-                        <th>CompanyName</th>
-                        <th>JobRole</th>
-                        <th>City</th>
-                        <th>State</th>
-                        <th>ZipCode</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Recommended jobs will be dynamically added here -->
-                </tbody>
-            </table>
+        <div class="jobs-box" id="recommended-jobs-table">
+            <h2>Top 5 Recommended Jobs</h2>
+                <table id="recommended-jobs-table">
+                    <thead>
+                        <tr>
+                            <th>Job ID</th>
+                            <th>Company Name</th>
+                            <th>Job Role</th>
+                            <th>Description</th>
+                            <th>Similarity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Recommended jobs will be populated here -->
+                    </tbody>
+                </table>
         </div>
     </div>
 
-    <script>
+    <script src="script.js" defer></script>
+    
+    <script defer>
         document.addEventListener("DOMContentLoaded", () => {
-            fetchUserInfo(); // Call your existing function to update user info on page load
+            fetchUserInfo(); 
+            fetchRecommendedJobs(); 
         });
     </script>
-    <script src="script.js"></script>
 </body>
 </html>

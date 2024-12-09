@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <title>Job Market Analysis Platform</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -17,8 +17,70 @@
 
         <!-- Error Message -->
         <p id="error-message" style="color: red; display: none;"></p>
+
+        <!-- Create Account Section (Hidden initially) -->
+        <div id="create-account-section" style="display: none;">
+            <h2>Create Account</h2>
+            <form id="create-account-form">
+                <input type="text" id="first-name" placeholder="First Name" required>
+                <input type="text" id="last-name" placeholder="Last Name" required>
+                <input type="email" id="new-email" placeholder="Email" required>
+                <input type="password" id="new-password" placeholder="Password" required>
+                <textarea id="resume" placeholder="Paste your resume here" required></textarea>
+                <button type="submit">Create Account</button>
+            </form>
+        </div>
+
+        <!-- Create Account Button -->
+        <button id="create-account-button" onclick="toggleCreateAccountForm()">Create Account</button>
     </div>
 
     <script src="script.js"></script>
+    <script>
+        // Toggle Create Account Form visibility
+        function toggleCreateAccountForm() {
+            const createAccountSection = document.getElementById('create-account-section');
+            const createAccountButton = document.getElementById('create-account-button');
+
+            // Toggle visibility of create account form
+            if (createAccountSection.style.display === 'none') {
+                createAccountSection.style.display = 'block';
+                createAccountButton.textContent = 'Back to Login';
+            } else {
+                createAccountSection.style.display = 'none';
+                createAccountButton.textContent = 'Create Account';
+            }
+        }
+
+        // Handle account creation form submission
+        document.getElementById('create-account-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const firstName = document.getElementById('first-name').value;
+            const lastName = document.getElementById('last-name').value;
+            const email = document.getElementById('new-email').value;
+            const password = document.getElementById('new-password').value;
+            const resume = document.getElementById('resume').value;
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ firstName, lastName, email, password, resume }),
+                });
+                const data = await response.json();
+                console.log('Response from register endpoint:', data);
+                
+                if (response.ok) {
+                    window.location.href = 'index.html';  // Redirect to index page after account creation
+                } else {
+                    alert(data.message || 'Account creation failed');
+                }
+            } catch (error) {
+                console.error('Error during account creation:', error);
+                alert('An error occurred. Please try again.');
+            }
+        });
+    </script>
 </body>
 </html>
