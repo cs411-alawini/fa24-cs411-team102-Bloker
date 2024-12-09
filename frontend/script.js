@@ -163,6 +163,26 @@ function populateJobsTable(jobs, tableId) {
     });
 }
 
+async function refreshJobs() {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/jobs/random');
+        if (!response.ok) {
+            throw new Error(`Error fetching random jobs: ${response.statusText}`);
+        }
+        const jobs = await response.json();
+        populateJobsTable(jobs, 'all-jobs-table');
+    } catch (error) {
+        console.error("Failed to refresh jobs:", error);
+        alert(`Failed to refresh jobs: ${error.message}`);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const refreshJobsBtn = document.getElementById('refresh-jobs-btn');
+    if (refreshJobsBtn) {
+        refreshJobsBtn.addEventListener('click', refreshJobs);
+    }
+});
 // Update the document with user information
 function fetchUserInfo() {
     try {
