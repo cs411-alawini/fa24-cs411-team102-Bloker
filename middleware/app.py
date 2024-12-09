@@ -204,23 +204,32 @@ def get_jobs():
 
 @app.route('/heatmap', methods=['GET'])
 def heatmap_data():
-    city = request.args.get('city')
-    state = request.args.get('state')
-    zip_code = request.args.get('zip_code')
-    
+    """
+    Fetch heatmap data for open job locations.
+    """
     try:
         conn = get_connection()
         with conn.cursor() as cursor:
             query = """
-                SELECT Location.City, Location.State, COUNT(Job.JobId) as JobCount
+                SELECT 
+                    Location.Latitude, 
+                    Location.Longitude, 
+                    COUNT(Job.JobId) AS JobCount
                 FROM Job
                 JOIN Location ON Job.LocationId = Location.LocationId
-                WHERE Location.City LIKE %s OR Location.State LIKE %s OR Location.ZipCode LIKE %s
-                GROUP BY Location.City, Location.State;
+                GROUP BY Location.Latitude, Location.Longitude;
             """
-            cursor.execute(query, (f"%{city}%", f"%{state}%", f"%{zip_code}%"))
+            cursor.execute(query)
             results = cursor.fetchall()
-            return jsonify(results), 200
+            locations = [
+                {
+                    "latitude": row[0],
+                    "longitude": row[1],
+                    "job_count": row[2]
+                }
+                for row in results
+            ]
+            return jsonify(locations), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
