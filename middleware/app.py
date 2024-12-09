@@ -95,44 +95,38 @@ def manage_user():
                 ]
                 return jsonify(users), 200
 
-            elif request.method == 'POST':
-                if not request.is_json:
-                    return jsonify({"error": "Request must be JSON and have 'Content-Type: application/json' header"}), 415
-                
-                data = request.get_json()
-                query = """
-                    INSERT INTO User (Resume, Email, Password, FirstName, LastName)
-                    VALUES (%s, %s, %s, %s, %s);
-                """
-                cursor.execute(query, (
-                    data.get('Resume'),
-                    data['Email'],
-                    data['Password'],
-                    data.get('FirstName'),
-                    data.get('LastName')
-                ))
-                conn.commit()
-                return jsonify({"message": "User added successfully"}), 201
-
             elif request.method == 'PUT':
+                # PUT expects JSON
                 if not request.is_json:
                     return jsonify({"error": "Request must be JSON and have 'Content-Type: application/json' header"}), 415
                 
+                # Update user
                 data = request.get_json()
+                old_email = data.get('OldEmail')  # Old email to identify the record
+                new_email = data.get('Email')  # New email to update in the record
+
+                if not old_email:
+                    return jsonify({"error": "OldEmail parameter is required to update user information"}), 400
+
                 query = """
                     UPDATE User
-                    SET Resume = %s, Password = %s, FirstName = %s, LastName = %s
+                    SET Resume = %s, Password = %s, FirstName = %s, LastName = %s, Email = %s
                     WHERE Email = %s;
                 """
-                cursor.execute(query, (
-                    data.get('Resume'),
-                    data['Password'],
-                    data.get('FirstName'),
-                    data.get('LastName'),
-                    data['Email']
-                ))
-                conn.commit()
-                return jsonify({"message": "User updated successfully"}), 200
+                try:
+                    cursor.execute(query, (
+                        data.get('Resume'),
+                        data['Password'],
+                        data.get('FirstName'),
+                        data.get('LastName'),
+                        new_email,
+                        old_email
+                    ))
+                    conn.commit()
+                    return jsonify({"message": "User updated successfully"}), 200
+                except Exception as e:
+                    conn.rollback()
+                    return jsonify({"error": str(e)}), 500
 
             elif request.method == 'DELETE':
                 email = request.args.get('email')
@@ -284,7 +278,8 @@ def login():
                     "UserId": user_id,
                     "Resume": resume,
                     "FirstName": first_name,
-                    "LastName": last_name
+                    "LastName": last_name,
+                    "Email": email
                 }
             }), 200
 
@@ -304,18 +299,20 @@ def get_user():
 
         conn = get_connection()
         with conn.cursor() as cursor:
-            query = "SELECT FirstName, LastName, Resume FROM User WHERE UserId = %s;"
+            query = "SELECT FirstName, LastName, Resume, Email, Password FROM User WHERE UserId = %s;"
             cursor.execute(query, (user_id,))
             result = cursor.fetchone()
 
             if not result:
                 return jsonify({"error": "User not found"}), 404
 
-            first_name, last_name, resume = result
+            first_name, last_name, resume, email, password = result
 
             return jsonify({
                 "FirstName": first_name,
                 "LastName": last_name,
+                "Email": email,
+                "Password" : password,
                 "Resume": resume
             }), 200
 

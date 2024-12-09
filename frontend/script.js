@@ -547,13 +547,17 @@ async function loginAccount(event) {
         localStorage.setItem('user', JSON.stringify({
             firstName: data.user.FirstName,
             lastName: data.user.LastName,
-            resume: data.user.Resume || '' // Default to empty string if Resume is not present
+            email: email,
+            resume: data.user.Resume || '', // Default to empty string if Resume is not present
+            password: password
         }));
 
         console.log("Logged in user info stored in localStorage:", {
             firstName: data.user.FirstName,
             lastName: data.user.LastName,
-            resume: data.user.Resume || ''
+            email: email,
+            resume: data.user.Resume || '',
+            password: password
         });
 
         alert("Login successful! Redirecting to homepage...");
@@ -650,16 +654,18 @@ function fetchUserInfo() {
             throw new Error("User information not found. Please log in again.");
         }
 
-        const { firstName, lastName, resume } = JSON.parse(storedUser);
+        const { firstName, lastName, email, resume } = JSON.parse(storedUser);
 
         // Update the document fields with user information
         document.getElementById("firstName").value = firstName || '';
         document.getElementById("lastName").value = lastName || '';
+        document.getElementById("email").value = email || '';
         document.getElementById("resume").value = resume || '';
 
         console.log("User information updated in the UI from localStorage:", {
             firstName,
             lastName,
+            email,
             resume
         });
     } catch (error) {
@@ -669,6 +675,92 @@ function fetchUserInfo() {
         window.location.href = "index.html";
     }
 }
+
+// Initialize user information on page load
+document.addEventListener("DOMContentLoaded", () => {
+    const loginForm = document.getElementById("login-form");
+    if (loginForm) {
+        loginForm.addEventListener("submit", loginAccount);
+    }
+
+    // If on home.html, initialize and fetch user info
+    if (window.location.pathname.includes("home.html")) {
+        fetchUserInfo(); // Populate the form with the data
+    }
+});
+
+// Save user information to the database
+async function saveUserInfo(event) {
+    event.preventDefault(); // Prevent default form submission
+
+    const firstName = document.getElementById("firstName").value.trim();
+    const lastName = document.getElementById("lastName").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const resume = document.getElementById("resume").value.trim();
+
+    try {
+        const storedUser = JSON.parse(localStorage.getItem("user")) || {};
+
+        // Check if there's a change in user data
+        if (
+            storedUser.firstName === firstName &&
+            storedUser.lastName === lastName &&
+            storedUser.email === email &&
+            storedUser.resume === resume
+        ) {
+            console.log("No changes detected in user information.");
+            alert("No changes made to update.");
+            return;
+        }
+
+        // Prepare payload
+        const payload = {
+            OldEmail: storedUser.email, // Current email in the database
+            Email: email, // New email to update
+            FirstName: firstName,
+            LastName: lastName,
+            Resume: resume,
+            Password: storedUser.password // Include the stored password
+        };
+
+        const method = storedUser.email ? "PUT" : "POST"; // Use PUT if updating, POST if inserting
+
+        const response = await fetch("http://127.0.0.1:5000/user", {
+            method: method,
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Failed to save user information");
+
+        // Update localStorage with the latest user info
+        localStorage.setItem("user", JSON.stringify({
+            ...storedUser,
+            firstName,
+            lastName,
+            email,
+            resume
+        }));
+
+        console.log("User information saved successfully:", data);
+        alert("User information saved successfully!");
+
+    } catch (error) {
+        console.error("Error saving user information:", error.message);
+        alert(`Error saving user information: ${error.message}`);
+    }
+}
+
+// Attach the saveUserInfo function to the form submission event
+document.addEventListener("DOMContentLoaded", () => {
+    const personalInfoForm = document.getElementById("personal-info-form");
+    if (personalInfoForm) {
+        personalInfoForm.addEventListener("submit", saveUserInfo);
+    }
+});
 
 window.initMap = initMap;
 
