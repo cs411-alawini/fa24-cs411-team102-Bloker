@@ -88,4 +88,56 @@ END$$
 DELIMITER ;
 
 Constraints: 
-- Discuss FK and PK constraints
+
+Constrains example:
+-- User Table
+CREATE TABLE User (
+    UserId INT AUTO_INCREMENT PRIMARY KEY,
+    FirstName VARCHAR(50) NOT NULL,
+    LastName VARCHAR(50) NOT NULL,
+    Email VARCHAR(100) NOT NULL UNIQUE,
+    Password VARCHAR(255) NOT NULL,
+    Resume TEXT NOT NULL,
+    ResumeEmbedding JSON,
+    CHECK (Email LIKE '%_@__%.__%') -- Basic email format validation
+);
+
+Primary Key Constraints
+Primary Keys uniquely identify each record within a table, preventing duplicate entries and ensuring accurate data retrieval.
+
+User Table (User)
+
+Primary Key: UserId
+Purpose: Uniquely identifies each user, enabling precise user-specific operations like profile updates and account management.
+
+Job Table (Job)
+Primary Key: JobId
+Purpose: Uniquely identifies each job listing, facilitating accurate job management and user interactions such as applications.
+
+Company Table (Company)
+Primary Key: CompanyName
+Purpose: Ensures each company is uniquely identifiable, allowing correct association of jobs to their respective companies.
+
+Location Table (Location)
+Primary Key: LocationId
+Purpose: Uniquely distinguishes each location, enabling precise mapping of jobs to specific cities, states, and zip codes.
+Foreign Key Constraints
+Foreign Keys establish relationships between tables, ensuring that references between records are valid and maintaining referential integrity.
+
+Job Table (Job)
+Foreign Keys:
+CompanyName references Company(CompanyName)
+LocationId references Location(LocationId)
+Purpose:
+CompanyName: Links each job to a specific company, ensuring that all job listings are associated with existing companies.
+LocationId: Associates each job with a valid location, enabling accurate location-based job searches and visualizations.
+
+
+Additional Constraints
+Unique Constraints:
+User.Email: Ensures each email address is unique, preventing duplicate user accounts.
+Not Null Constraints:
+Applied to essential fields like User.FirstName, Job.JobRole, and Location.State to ensure critical information is always provided.
+Check Constraints:
+Enforced valid data formats, such as ensuring Location.State contains only valid state abbreviations.
+

@@ -220,7 +220,7 @@ def manage_user():
 #                 cursor.execute(delete_query, (email,))
 #                 conn.commit()
 #                 return jsonify({"message": f"User with email {email} deleted successfully"}), 200
-
+ 
 #     except Exception as e:
 #         return jsonify({"error": str(e)}), 500
 #     finally:
