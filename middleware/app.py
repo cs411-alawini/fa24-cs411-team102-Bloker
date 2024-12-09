@@ -61,163 +61,80 @@ def compute_embedding(text):
 def home():
     return "Welcome to the API! Use specific endpoints like /user, /heatmap or /jobs.", 200
 
-# @app.route('/user', methods=['GET', 'POST', 'PUT', 'DELETE'])
-# def manage_user():
-#     try:
-#         conn = get_connection()
-#         with conn.cursor() as cursor:
-#             if request.method == 'GET':
-#                 email = request.args.get('email')
-#                 limit = request.args.get('limit', default=None, type=int)
-#                 if email:
-#                     query = "SELECT UserId, Resume, Email, FirstName, LastName FROM User WHERE Email = %s;"
-#                     cursor.execute(query, (email,))
-#                 else:
-#                     query = "SELECT UserId, Resume, Email, FirstName, LastName FROM User"
-#                     params = []
-#                     if limit:
-#                         query += " ORDER BY UserId DESC LIMIT %s;"
-#                         params.append(limit)
-#                     else:
-#                         query += ";"
-#                     cursor.execute(query, params)
-                
-#                 results = cursor.fetchall()
-#                 users = [
-#                     {
-#                         "UserId": row[0],
-#                         "Resume": row[1],
-#                         "Email": row[2],
-#                         "FirstName": row[3],
-#                         "LastName": row[4]
-#                     }
-#                     for row in results
-#                 ]
-#                 return jsonify(users), 200
-
-#             elif request.method == 'PUT':
-#                 # PUT expects JSON
-#                 if not request.is_json:
-#                     return jsonify({"error": "Request must be JSON and have 'Content-Type: application/json' header"}), 415
-                
-#                 # Update user
-#                 data = request.get_json()
-#                 old_email = data.get('OldEmail')  # Old email to identify the record
-#                 new_email = data.get('Email')  # New email to update in the record
-
-#                 if not old_email:
-#                     return jsonify({"error": "OldEmail parameter is required to update user information"}), 400
-
-#                 query = """
-#                     UPDATE User
-#                     SET Resume = %s, Password = %s, FirstName = %s, LastName = %s, Email = %s
-#                     WHERE Email = %s;
-#                 """
-#                 try:
-#                     cursor.execute(query, (
-#                         data.get('Resume'),
-#                         data['Password'],
-#                         data.get('FirstName'),
-#                         data.get('LastName'),
-#                         new_email,
-#                         old_email
-#                     ))
-#                     conn.commit()
-#                     return jsonify({"message": "User updated successfully"}), 200
-#                 except Exception as e:
-#                     conn.rollback()
-#                     return jsonify({"error": str(e)}), 500
-
-#             elif request.method == 'DELETE':
-#                 email = request.args.get('email')
-#                 if not email:
-#                     return jsonify({"error": "Email parameter is required for deletion"}), 400
-
-#                 query = "DELETE FROM User WHERE Email = %s;"
-#                 cursor.execute(query, (email,))
-#                 conn.commit()
-#                 return jsonify({"message": f"User with email {email} deleted successfully"}), 200
-
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500
-#     finally:
-#         if conn:
-#             conn.close()
-
-@app.route('/user', methods=['GET', 'DELETE'])
+@app.route('/user', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def manage_user():
     try:
         conn = get_connection()
         with conn.cursor() as cursor:
-            # Handle GET requests
             if request.method == 'GET':
-                user_id = request.args.get('user_id')
                 email = request.args.get('email')
                 limit = request.args.get('limit', default=None, type=int)
-
-                if user_id:
-                    # Fetch user by user_id
-                    query = "SELECT UserId, Resume, Email, FirstName, LastName FROM User WHERE UserId = %s;"
-                    cursor.execute(query, (user_id,))
-                elif email:
-                    # Fetch user by email
+                if email:
                     query = "SELECT UserId, Resume, Email, FirstName, LastName FROM User WHERE Email = %s;"
                     cursor.execute(query, (email,))
                 else:
-                    # Fetch all users or limit
                     query = "SELECT UserId, Resume, Email, FirstName, LastName FROM User"
                     params = []
                     if limit:
                         query += " ORDER BY UserId DESC LIMIT %s;"
                         params.append(limit)
-                    query += ";"
+                    else:
+                        query += ";"
                     cursor.execute(query, params)
-
+                
                 results = cursor.fetchall()
-                if user_id or email:
-                    # Single user expected
-                    if results:
-                        result = results[0]
-                        user = {
-                            "UserId": result[0],
-                            "Resume": result[1],
-                            "Email": result[2],
-                            "FirstName": result[3],
-                            "LastName": result[4],
-                        }
-                        return jsonify(user), 200
-                    return jsonify({"error": "User not found"}), 404
-                else:
-                    # Multiple users expected
-                    users = [
-                        {
-                            "UserId": row[0],
-                            "Resume": row[1],
-                            "Email": row[2],
-                            "FirstName": row[3],
-                            "LastName": row[4],
-                        }
-                        for row in results
-                    ]
-                    return jsonify(users), 200
+                users = [
+                    {
+                        "UserId": row[0],
+                        "Resume": row[1],
+                        "Email": row[2],
+                        "FirstName": row[3],
+                        "LastName": row[4]
+                    }
+                    for row in results
+                ]
+                return jsonify(users), 200
 
-            # Handle DELETE requests
+            elif request.method == 'PUT':
+                # PUT expects JSON
+                if not request.is_json:
+                    return jsonify({"error": "Request must be JSON and have 'Content-Type: application/json' header"}), 415
+                
+                # Update user
+                data = request.get_json()
+                old_email = data.get('OldEmail')  # Old email to identify the record
+                new_email = data.get('Email')  # New email to update in the record
+
+                if not old_email:
+                    return jsonify({"error": "OldEmail parameter is required to update user information"}), 400
+
+                query = """
+                    UPDATE User
+                    SET Resume = %s, Password = %s, FirstName = %s, LastName = %s, Email = %s
+                    WHERE Email = %s;
+                """
+                try:
+                    cursor.execute(query, (
+                        data.get('Resume'),
+                        data['Password'],
+                        data.get('FirstName'),
+                        data.get('LastName'),
+                        new_email,
+                        old_email
+                    ))
+                    conn.commit()
+                    return jsonify({"message": "User updated successfully"}), 200
+                except Exception as e:
+                    conn.rollback()
+                    return jsonify({"error": str(e)}), 500
+
             elif request.method == 'DELETE':
                 email = request.args.get('email')
                 if not email:
                     return jsonify({"error": "Email parameter is required for deletion"}), 400
 
-                # Check if user exists before deletion
-                check_query = "SELECT UserId FROM User WHERE Email = %s;"
-                cursor.execute(check_query, (email,))
-                user_exists = cursor.fetchone()
-
-                if not user_exists:
-                    return jsonify({"error": f"User with email {email} does not exist"}), 404
-
-                # Delete the user
-                delete_query = "DELETE FROM User WHERE Email = %s;"
-                cursor.execute(delete_query, (email,))
+                query = "DELETE FROM User WHERE Email = %s;"
+                cursor.execute(query, (email,))
                 conn.commit()
                 return jsonify({"message": f"User with email {email} deleted successfully"}), 200
 
@@ -226,6 +143,89 @@ def manage_user():
     finally:
         if conn:
             conn.close()
+
+# @app.route('/user', methods=['GET', 'DELETE'])
+# def manage_user():
+#     try:
+#         conn = get_connection()
+#         with conn.cursor() as cursor:
+#             # Handle GET requests
+#             if request.method == 'GET':
+#                 user_id = request.args.get('user_id')
+#                 email = request.args.get('email')
+#                 limit = request.args.get('limit', default=None, type=int)
+
+#                 if user_id:
+#                     # Fetch user by user_id
+#                     query = "SELECT UserId, Resume, Email, FirstName, LastName FROM User WHERE UserId = %s;"
+#                     cursor.execute(query, (user_id,))
+#                 elif email:
+#                     # Fetch user by email
+#                     query = "SELECT UserId, Resume, Email, FirstName, LastName FROM User WHERE Email = %s;"
+#                     cursor.execute(query, (email,))
+#                 else:
+#                     # Fetch all users or limit
+#                     query = "SELECT UserId, Resume, Email, FirstName, LastName FROM User"
+#                     params = []
+#                     if limit:
+#                         query += " ORDER BY UserId DESC LIMIT %s;"
+#                         params.append(limit)
+#                     query += ";"
+#                     cursor.execute(query, params)
+
+#                 results = cursor.fetchall()
+#                 if user_id or email:
+#                     # Single user expected
+#                     if results:
+#                         result = results[0]
+#                         user = {
+#                             "UserId": result[0],
+#                             "Resume": result[1],
+#                             "Email": result[2],
+#                             "FirstName": result[3],
+#                             "LastName": result[4],
+#                         }
+#                         return jsonify(user), 200
+#                     return jsonify({"error": "User not found"}), 404
+#                 else:
+#                     # Multiple users expected
+#                     users = [
+#                         {
+#                             "UserId": row[0],
+#                             "Resume": row[1],
+#                             "Email": row[2],
+#                             "FirstName": row[3],
+#                             "LastName": row[4],
+#                         }
+#                         for row in results
+#                     ]
+#                     return jsonify(users), 200
+
+#             # Handle DELETE requests
+#             elif request.method == 'DELETE':
+#                 email = request.args.get('email')
+#                 if not email:
+#                     return jsonify({"error": "Email parameter is required for deletion"}), 400
+
+#                 # Check if user exists before deletion
+#                 check_query = "SELECT UserId FROM User WHERE Email = %s;"
+#                 cursor.execute(check_query, (email,))
+#                 user_exists = cursor.fetchone()
+
+#                 if not user_exists:
+#                     return jsonify({"error": f"User with email {email} does not exist"}), 404
+
+#                 # Delete the user
+#                 delete_query = "DELETE FROM User WHERE Email = %s;"
+#                 cursor.execute(delete_query, (email,))
+#                 conn.commit()
+#                 return jsonify({"message": f"User with email {email} deleted successfully"}), 200
+
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+#     finally:
+#         if conn:
+#             conn.close()
 
 
 @app.route('/jobs', methods=['GET'])
