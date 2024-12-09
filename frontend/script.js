@@ -290,14 +290,14 @@ async function deleteAccount() {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (!storedUser || !storedUser.email) {
         alert("User not found. Please log in again.");
-        window.location.href = "index.html";
+        window.location.href = "index.html"; // Redirect to login page
         return;
     }
 
     const email = storedUser.email;
 
     try {
-        // Temporarily disable the saveUserInfo form listener
+        // Temporarily disable any other listeners or forms related to user info
         const personalInfoForm = document.getElementById("personal-info-form");
         if (personalInfoForm) {
             personalInfoForm.removeEventListener("submit", saveUserInfo);
@@ -314,10 +314,15 @@ async function deleteAccount() {
         localStorage.clear();
 
         alert("Account deleted successfully.");
-        window.location.href = "index.html";
+        // Redirect to the index.html (login page)
+        window.location.replace("index.html");
     } catch (error) {
         console.error("Error deleting account:", error.message);
         alert(`Error deleting account: ${error.message}`);
+    } finally {
+        // Ensure no additional data fetching or form-related processes occur
+        localStorage.clear(); // Additional cleanup in case of error
+        window.location.replace("index.html"); // Ensure redirection
     }
 }
 

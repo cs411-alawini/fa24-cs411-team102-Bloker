@@ -52,33 +52,6 @@
             }
         }
 
-        // Handle login form submission
-        document.getElementById('login-form').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            try {
-                const response = await fetch('http://127.0.0.1:5000/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password }),
-                });
-                const data = await response.json();
-                if (response.ok) {
-                    if (data.token) localStorage.setItem('authToken', data.token);
-                    window.location.href = 'home.html';
-                } else {
-                    document.getElementById('error-message').innerText = data.message || 'Login failed';
-                    document.getElementById('error-message').style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Error during login:', error);
-                document.getElementById('error-message').innerText = 'An error occurred. Please try again.';
-                document.getElementById('error-message').style.display = 'block';
-            }
-        });
-
         // Handle account creation form submission
         document.getElementById('create-account-form').addEventListener('submit', async (event) => {
             event.preventDefault();
