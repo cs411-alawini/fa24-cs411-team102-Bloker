@@ -103,10 +103,8 @@ CREATE TABLE User (
 );
 
 Primary Key Constraints
-Primary Keys uniquely identify each record within a table, preventing duplicate entries and ensuring accurate data retrieval.
 
 User Table (User)
-
 Primary Key: UserId
 Purpose: Uniquely identifies each user, enabling precise user-specific operations like profile updates and account management.
 
