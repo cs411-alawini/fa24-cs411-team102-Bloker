@@ -554,7 +554,37 @@ def add_job():
     finally:
         conn.close()
 
-
+@app.route('/jobs/random', methods=['GET'])
+def get_random_jobs():
+    try:
+        conn = get_connection()
+        with conn.cursor() as cursor:
+            query = """
+                SELECT Job.JobId, Job.CompanyName, Job.JobRole, Location.City, Location.State, Location.ZipCode
+                FROM Job
+                JOIN Location ON Job.LocationId = Location.LocationId
+                ORDER BY RAND()
+                LIMIT 10;
+            """
+            cursor.execute(query)
+            results = cursor.fetchall()
+            jobs = [
+                {
+                    "JobId": row[0],
+                    "CompanyName": row[1],
+                    "JobRole": row[2],
+                    "City": row[3],
+                    "State": row[4],
+                    "ZipCode": row[5]
+                }
+                for row in results
+            ]
+            return jsonify(jobs), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
 
 if __name__ == '__main__':
     app.run(debug=True)
