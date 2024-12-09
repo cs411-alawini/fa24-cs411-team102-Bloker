@@ -28,8 +28,50 @@ with conn.cursor() as cursor:
 
             conn.commit()
 
-Stored Procedure:
- -- FINISH (Niki)
+Stored Procedure: We created a stored procedure that registers new users.
+
+DELIMITER $$
+CREATE PROCEDURE RegisterNewUserAdvanced(
+    IN p_FirstName VARCHAR(100),
+    IN p_LastName VARCHAR(100),
+    IN p_Email VARCHAR(255),
+    IN p_Password VARCHAR(255),
+    IN p_Resume TEXT
+)
+BEGIN
+    DECLARE v_count INT DEFAULT 0;
+    DECLARE v_newUserId INT DEFAULT NULL;
+
+    SELECT COUNT(*) INTO v_count FROM User WHERE Email = p_Email;
+
+    IF v_count > 0 THEN
+        SELECT 'ERROR' AS Status, 'Email already in use' AS Message, NULL AS NewUserId, NULL AS SameLastNameCount, NULL AS TotalUsers;
+    ELSE
+        INSERT INTO User (FirstName, LastName, Email, Password, Resume)
+        VALUES (p_FirstName, p_LastName, p_Email, p_Password, p_Resume);
+        
+        SET v_newUserId = LAST_INSERT_ID();
+
+        SELECT COUNT(*) 
+        INTO v_count
+        FROM User
+        WHERE LastName = p_LastName;
+
+        SET @SameLastNameCount = v_count;
+
+        SELECT COUNT(*) 
+        INTO v_count
+        FROM User;
+        
+        SELECT 
+            'SUCCESS' AS Status, 
+            CONCAT('Account created successfully for: ', p_Email) AS Message, 
+            v_newUserId AS NewUserId,
+            @SameLastNameCount AS SameLastNameCount,
+            v_count AS TotalUsers;
+    END IF;
+END$$
+DELIMITER ;
 
 Triggers:
 
